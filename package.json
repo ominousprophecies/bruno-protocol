@@ -1,0 +1,21 @@
+{
+  "name": "@brunoprotocol/mcp-server",
+  "version": "0.1.0",
+  "description": "Expose local Bruno collections (.bru and OpenCollection YAML) as tools to AI agents via Model Context Protocol",
+  "main": "index.js",
+  "type": "module",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "yaml": "^2.4.0",
+    "chokidar": "^3.6.0"
+  },
+  "keywords": [
+    "bruno",
+    "mcp",
+    "ai-agents",
+    "developer-tools",
+    "opencollection"
+  ],
+  "author": "Bruno Protocol Community",
+  "license": "MIT"
+}
