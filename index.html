@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bruno Protocol | AI-Agent MCP Gateway</title>
+    <style>
+        :root {
+            --bg-color: #0b0c10;
+            --card-bg: #1f2833;
+            --accent-color: #66fcf1;
+            --text-main: #c5c6c7;
+            --text-bright: #ffffff;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 800px;
+            padding: 40px 20px;
+        }
+
+        .badge {
+            background-color: rgba(102, 252, 241, 0.1);
+            color: var(--accent-color);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border: 1px solid rgba(102, 252, 241, 0.2);
+            display: inline-block;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            color: var(--text-bright);
+            font-size: 3rem;
+            font-weight: 800;
+            margin: 0 0 16px 0;
+            letter-spacing: -0.5px;
+        }
+
+        p {
+            font-size: 1.25rem;
+            line-height: 1.6;
+            margin: 0 0 40px 0;
+        }
+
+        .terminal {
+            background-color: #000000;
+            border: 1px solid #2f363d;
+            border-radius: 8px;
+            padding: 18px 24px;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-size: 0.95rem;
+            color: var(--text-bright);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 500px;
+            margin: 0 auto 48px auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .terminal code {
+            color: var(--accent-color);
+        }
+
+        .btn-copy {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: var(--text-main);
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-copy:hover {
+            background: white;
+            color: black;
+            border-color: white;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 8px;
+            padding: 24px;
+            text-align: left;
+        }
+
+        .card h3 {
+            color: var(--text-bright);
+            margin: 0 0 8px 0;
+            font-size: 1.1rem;
+        }
+
+        .card p {
+            font-size: 0.95rem;
+            margin: 0;
+            line-height: 1.5;
+            color: var(--text-main);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="badge">Model Context Protocol Standard</div>
+        <h1>Give Your AI Agents the Keys to Your Bruno Collections.</h1>
+        <p>Turn your local-first .bru and OpenCollection YAML testing suites into secure, instantly discoverable toolsets for autonomous LLM systems. No cloud leaks. No manual specs.</p>
+
+        <div class="terminal">
+            <span>$ <code>npm install -g @brunoprotocol/server</code></span>
+            <button class="btn-copy" onclick="navigator.clipboard.writeText('npm install -g @brunoprotocol/server')">Copy</button>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h3>⚡ Zero-Config Architecture</h3>
+                <p>If you've built and organized your API endpoints in the Bruno client, your AI agent's entire command menu is already completely documented.</p>
+            </div>
+            <div class="card">
+                <h3>🔒 Air-Gapped Safety</h3>
+                <p>Sensitive headers, private credentials, and authorization tokens remain strictly sandboxed on your local environment throughout execution cycles.</p>
+            </div>
+            <div class="card">
+                <h3>🤖 Universal LLM Fitting</h3>
+                <p>Fully compliant with open MCP architecture frameworks. Connects instantly to Claude Desktop, Cursor, or custom corporate developer pipelines.</p>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
