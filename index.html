@@ -176,7 +176,10 @@
           <textarea id="postmanInput" placeholder="Paste your exported Postman collection JSON data here..."></textarea>
         </div>
         <div class="textarea-wrap">
-          <label>Compiled Plain-Text .bru Output:</label>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <label style="margin: 0;">Compiled Plain-Text .bru Output:</label>
+            <button id="btnCopy" style="padding: 4px 10px; font-size: 11px; background-color: #334155; color: #fff; border: 1px solid #475569; border-radius: 4px; cursor: pointer;">📋 Copy Code</button>
+          </div>
           <textarea id="brunoOutput" placeholder="Your deterministic .bru file conversion will print here..." readonly></textarea>
         </div>
       </div>

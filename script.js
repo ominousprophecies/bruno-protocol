@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", function () {
   var postmanInput = document.getElementById("postmanInput");
   var brunoOutput = document.getElementById("brunoOutput");
   var btnConvert = document.getElementById("btnConvert");
+  var btnCopy = document.getElementById("btnCopy");
 
   var sliderTeamSize = document.getElementById("sliderTeamSize");
   var sliderRequests = document.getElementById("sliderRequests");
@@ -40,7 +41,34 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // 3. Define the Carbon Metric Calculation Trigger Function
+  // 3. --- COPY TO CLIPBOARD UX FUNCTION ---
+  if (btnCopy) {
+    btnCopy.addEventListener("click", function () {
+      var outputText = brunoOutput.value;
+      
+      if (!outputText || outputText.startsWith("//") || outputText.trim() === "") {
+        alert("Nothing to copy yet! Please convert a valid Postman collection first.");
+        return;
+      }
+
+      // Use the modern browser Clipboard API
+      navigator.clipboard.writeText(outputText).then(function () {
+        // Visual feedback loop change
+        btnCopy.innerText = "✅ Copied!";
+        btnCopy.style.backgroundColor = "#10b981";
+
+        // Reset button state back to standard after 2 seconds
+        setTimeout(function () {
+          btnCopy.innerText = "📋 Copy Code";
+          btnCopy.style.backgroundColor = "#334155";
+        }, 2000);
+      }).catch(function (err) {
+        console.error("Could not copy text: ", err);
+      });
+    });
+  }
+
+  // 4. Define the Carbon Metric Calculation Trigger Function
   function updateCarbonMetrics() {
     var team = parseInt(sliderTeamSize.value, 10);
     var reqs = parseInt(sliderRequests.value, 10);
@@ -60,11 +88,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // 4. Bind listeners to all sliders to calculate on every adjustment drag
+  // 5. Bind listeners to all sliders to calculate on every adjustment drag
   if (sliderTeamSize) sliderTeamSize.addEventListener("input", updateCarbonMetrics);
   if (sliderRequests) sliderRequests.addEventListener("input", updateCarbonMetrics);
   if (selectRegion) selectRegion.addEventListener("change", updateCarbonMetrics);
 
-  // 5. Run an initial calculation pass immediately on page load
+  // 6. Run an initial calculation pass immediately on page load
   updateCarbonMetrics();
 });
