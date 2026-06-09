@@ -1,244 +1,228 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bruno Protocol | AI-Agent MCP Gateway</title>
-    <style>
-        :root {
-            --bg-color: #0b0c10;
-            --card-bg: #1f2833;
-            --accent-color: #66fcf1;
-            --text-main: #c5c6c7;
-            --text-bright: #ffffff;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bruno Protocol | AI Agent MCP Gateway</title>
+  <style>
+    :root {
+      --bg-color: #0b0f19;
+      --card-bg: #131a26;
+      --accent-color: #00ffcc;
+      --text-main: #a5b4fc;
+      --text-bright: #ffffff;
+      --border-color: #223147;
+    }
 
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            text-align: center;
-        }
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
 
-        .container {
-            max-width: 800px;
-            padding: 40px 20px;
-        }
+    .container {
+      width: 100%;
+      max-width: 1000px;
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
 
-        .badge {
-            background-color: rgba(102, 252, 241, 0.1);
-            color: var(--accent-color);
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            border: 1px solid rgba(102, 252, 241, 0.2);
-            display: inline-block;
-            margin-bottom: 24px;
-        }
+    header {
+      text-align: center;
+      margin-bottom: 10px;
+    }
 
-        h1 {
-            color: var(--text-bright);
-            font-size: 3rem;
-            font-weight: 800;
-            margin: 0 0 16px 0;
-            letter-spacing: -0.5px;
-        }
+    header h1 {
+      color: var(--text-bright);
+      margin: 0 0 5px 0;
+      font-size: 2rem;
+    }
 
-        p {
-            font-size: 1.25rem;
-            line-height: 1.6;
-            margin: 0 0 40px 0;
-        }
+    .panel {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 25px;
+    }
 
-        /* --- SIGNUP FORM STYLING --- */
-        .form-container {
-            background-color: #151c24;
-            border: 1px solid #2f363d;
-            border-radius: 12px;
-            padding: 30px;
-            max-width: 450px;
-            margin: 0 auto 48px auto;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
-        }
+    .panel h2 {
+      color: var(--text-bright);
+      margin-top: 0;
+      margin-bottom: 15px;
+      font-size: 1.25rem;
+    }
 
-        .form-container h2 {
-            color: var(--text-bright);
-            margin-top: 0;
-            margin-bottom: 12px;
-            font-size: 1.4rem;
-        }
+    .converter-grid {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 15px;
+    }
 
-        .form-group {
-            margin-bottom: 16px;
-            text-align: left;
-        }
+    .textarea-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
 
-        .form-group label {
-            display: block;
-            font-size: 0.85rem;
-            color: #8b949e;
-            margin-bottom: 6px;
-            font-weight: 600;
-        }
+    textarea {
+      width: 100%;
+      height: 220px;
+      background-color: var(--bg-color);
+      color: var(--text-bright);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 12px;
+      font-family: monospace;
+      font-size: 13px;
+      box-sizing: border-box;
+      resize: vertical;
+    }
 
-        .form-group input {
-            width: 100%;
-            padding: 12px;
-            background-color: #0b0c10;
-            border: 1px solid #30363d;
-            border-radius: 6px;
-            color: white;
-            font-size: 1rem;
-            box-sizing: border-box;
-            transition: border-color 0.2s;
-        }
+    #brunoOutput {
+      color: #34d399;
+    }
 
-        .form-group input:focus {
-            outline: none;
-            border-color: var(--accent-color);
-        }
+    button {
+      background-color: #10b981;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 12px 24px;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
 
-        .btn-submit {
-            width: 100%;
-            padding: 12px;
-            background-color: var(--accent-color);
-            color: #0b0c10;
-            border: none;
-            border-radius: 6px;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
+    button:hover {
+      background-color: #059669;
+    }
 
-        .btn-submit:hover {
-            opacity: 0.9;
-        }
+    .slider-group {
+      margin-bottom: 20px;
+    }
 
-        #form-message {
-            margin-top: 14px;
-            font-size: 0.95rem;
-            font-weight: 600;
-        }
+    .slider-group label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
 
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 24px;
-            margin-top: 24px;
-        }
+    .slider-group label strong {
+      color: var(--accent-color);
+    }
 
-        .card {
-            background-color: var(--card-bg);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 8px;
-            padding: 24px;
-            text-align: left;
-        }
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent-color);
+    }
 
-        .card h3 {
-            color: var(--text-bright);
-            margin: 0 0 8px 0;
-            font-size: 1.1rem;
-        }
+    select {
+      width: 100%;
+      padding: 10px;
+      background-color: var(--bg-color);
+      color: var(--text-bright);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+    }
 
-        .card p {
-            font-size: 0.95rem;
-            margin: 0;
-            line-height: 1.5;
-            color: var(--text-main);
-        }
-    </style>
+    .metrics-display {
+      display: flex;
+      gap: 40px;
+      margin-top: 25px;
+      border-top: 1px solid var(--border-color);
+      padding-top: 20px;
+    }
+
+    .metric-card span {
+      font-size: 11px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #64748b;
+    }
+
+    .metric-card h3 {
+      margin: 5px 0 0 0;
+      font-size: 1.75rem;
+    }
+
+    #metricKgSaved { color: #34d399; }
+    #metricTreesCount { color: #60a5fa; }
+  </style>
 </head>
 <body>
 
-    <div class="container">
-        <div class="badge">Model Context Protocol Standard</div>
-        <h1>Give Your AI Agents the Keys to Your Bruno Collections.</h1>
-        <p>Turn your local-first .bru and OpenCollection YAML testing suites into secure, instantly discoverable toolsets for autonomous LLM systems.</p>
+  <div class="container">
+    <header>
+      <h1>🌐 bruno-protocol.org</h1>
+      <p>Local-First API Migration Utility & Cloud Computing Sustainability Metrics</p>
+    </header>
 
-        <!-- Dynamic User Registration Box -->
-        <div class="form-container">
-            <h2>Claim Your Developer Profile</h2>
-            <form id="registration-form">
-                <div class="form-group">
-                    <label for="email">EMAIL ADDRESS</label>
-                    <input type="email" id="email" required placeholder="you@example.com">
-                </div>
-                <div class="form-group">
-                    <label for="workspace">WORKSPACE INITIALS / NAME</label>
-                    <input type="text" id="workspace" required placeholder="e.g. Alpha-Team">
-                </div>
-                <button type="submit" class="btn-submit" id="submit-btn">Initialize Connection</button>
-                <div id="form-message"></div>
-            </form>
+    <!-- 1. Converter View -->
+    <div class="panel">
+      <h2>🛠️ Postman Collection to Plain-Text .bru Converter</h2>
+      <div class="converter-grid">
+        <div class="textarea-wrap">
+          <label>Source Postman JSON (v2.1):</label>
+          <textarea id="postmanInput" placeholder="Paste your exported Postman collection JSON data here..."></textarea>
         </div>
-
-        <div class="grid">
-            <div class="card">
-                <h3>⚡ Zero-Config Architecture</h3>
-                <p>If you've built and organized your API endpoints in the Bruno client, your AI agent's entire command menu is already completely documented.</p>
-            </div>
-            <div class="card">
-                <h3>🔒 Air-Gapped Safety</h3>
-                <p>Sensitive headers, private credentials, and authorization tokens remain strictly sandboxed on your local environment throughout execution cycles.</p>
-            </div>
-            <div class="card">
-                <h3>🤖 Universal LLM Fitting</h3>
-                <p>Fully compliant with open MCP architecture frameworks. Connects instantly to Claude Desktop, Cursor, or custom corporate developer pipelines.</p>
-            </div>
+        <div class="textarea-wrap">
+          <label>Compiled Plain-Text .bru Output:</label>
+          <textarea id="brunoOutput" placeholder="Your deterministic .bru file conversion will print here..." readonly></textarea>
         </div>
+      </div>
+      <button id="btnConvert">⚡ Compile Array to .bru Formatting</button>
     </div>
 
-    <!-- Edge Logic: Dynamic Connection to Supabase Layer -->
-    <script>
-        // Directly pull credentials injected into Vercel window environment variables safely
-        const SUPABASE_URL = window.location.hostname === 'localhost' ? '' : 'https://' + window.location.hostname; 
-        
-        document.getElementById('registration-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const email = document.getElementById('email').value;
-            const workspace = document.getElementById('workspace').value;
-            const msgDiv = document.getElementById('form-message');
-            const btn = document.getElementById('submit-btn');
+    <!-- 2. Sustainability Telemetry View -->
+    <div class="panel">
+      <h2>🌲 ISO/IEC 21031:2024 Software Carbon Intensity Dashboard</h2>
+      
+      <div class="slider-group">
+        <label>Engineering Team Size: <strong id="valTeamSize">15 devs</strong></label>
+        <input type="range" id="sliderTeamSize" min="1" max="250" value="15">
+      </div>
 
-            btn.innerText = "Connecting Gateway...";
-            btn.disabled = true;
+      <div class="slider-group">
+        <label>Monthly API Requests per Dev: <strong id="valRequests">50,000 reqs</strong></label>
+        <input type="range" id="sliderRequests" min="1000" max="200000" step="5000" value="50000">
+      </div>
 
-            try {
-                // Post directly to our system's edge network mapping
-                const response = await fetch('/api/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, workspace_name: workspace })
-                });
+      <div class="slider-group">
+        <label>Target Grid Infrastructure Region Archetype:</label>
+        <select id="selectRegion">
+          <option value="us-east-fossil">US East Mix (Fossil Gas / Coal Accent) — 380g CO₂e/kWh</option>
+          <option value="eu-mixed">EU West Mix (Transition Grid Infrastructure) — 210g CO₂e/kWh</option>
+          <option value="ca-clean-hydro">Canada West (Dominant Clean Hydro Footprint) — 30g CO₂e/kWh</option>
+        </select>
+      </div>
 
-                if (response.ok) {
-                    msgDiv.style.color = "#66fcf1";
-                    msgDiv.innerText = "✓ Profile Locked Into Supabase Pipeline!";
-                    document.getElementById('registration-form').reset();
-                } else {
-                    throw new Error('Network flag error');
-                }
-            } catch (err) {
-                msgDiv.style.color = "#ff4a4a";
-                msgDiv.innerText = "Connecting... Edge compilation mapping finalizing.";
-            } finally {
-                btn.innerText = "Initialize Connection";
-                btn.disabled = false;
-            }
-        });
-    </script>
+      <div class="metrics-display">
+        <div class="metric-card">
+          <span>Annual Operational Carbon Offset</span>
+          <h3 id="metricKgSaved">0.00 kg CO₂e</h3>
+        </div>
+        <div class="metric-card">
+          <span>GSF Environmental Equivalence Ratio</span>
+          <h3 id="metricTreesCount">0 Mature Trees</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Core Script Pipeline Imports -->
+  <script src="utils/converter.js"></script>
+  <script src="utils/sciCalculator.js"></script>
+  <script src="script.js"></script>
+
 </body>
 </html>
