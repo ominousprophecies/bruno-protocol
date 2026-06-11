@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bruno Protocol — Postman to .bru Compiler</title>
   
-  <link rel="icon" type="image/jpeg" href="/brand-logo.jpg">
-  <link rel="shortcut icon" type="image/jpeg" href="/brand-logo.jpg">
+  <link rel="icon" type="image/jpeg" href="/favicon.jpg">
+  <link rel="shortcut icon" type="image/jpeg" href="/favicon.jpg">
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,7 +37,7 @@
       overflow-x: hidden;
     }
 
-    /* Goldenboy Unified Background Matrix Configuration */
+    /* Goldenboy Ambient Backdrop Configuration */
     body::before {
       content: '';
       position: fixed;
@@ -49,9 +49,9 @@
         url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-position: center 35%;
-      background-size: auto 70vh; /* Scaled perfectly to dominate the center console */
+      background-size: auto 70vh;
       background-blend-mode: overlay;
-      opacity: 0.12; /* Subtle, non-intrusive watermark presence */
+      opacity: 0.12;
       pointer-events: none;
       z-index: 0;
     }
@@ -59,7 +59,7 @@
     nav {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-between: space-between;
       padding: 24px 40px;
       border-bottom: 1px solid rgba(255, 170, 0, 0.25);
       background: linear-gradient(180deg, var(--void) 0%, rgba(10, 8, 13, 0.8) 100%);
@@ -73,6 +73,19 @@
       display: flex;
       align-items: center;
       text-decoration: none;
+    }
+
+    /* Sleek micro-badge frame for the BP Monogram asset */
+    .nav-logo-badge {
+      height: 24px;
+      width: auto;
+      margin-right: 14px;
+      filter: drop-shadow(0 0 4px rgba(255, 170, 0, 0.3));
+      transition: transform 0.3s ease;
+    }
+
+    .nav-brand:hover .nav-logo-badge {
+      transform: scale(1.05);
     }
 
     .nav-title {
@@ -115,7 +128,7 @@
     }
 
     .biolume-panel {
-      background: rgba(10, 8, 13, 0.65); /* Augmented slightly for cleaner contrast over backdrop */
+      background: rgba(10, 8, 13, 0.65);
       border: 1px solid rgba(255, 170, 0, 0.15);
       padding: 35px;
       margin-bottom: 45px;
@@ -123,19 +136,6 @@
       backdrop-filter: blur(16px);
       box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
       position: relative;
-    }
-
-    .panel-title {
-      font-family: 'Cinzel', serif;
-      font-size: 16px;
-      color: var(--vibrant-gold);
-      margin-bottom: 24px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    .panel-title.sustain {
-      color: var(--biolume-green);
     }
 
     .grid {
@@ -190,7 +190,7 @@
     textarea {
       width: 100%;
       height: 340px;
-      background: rgba(5, 4, 6, 0.85); /* Darkened to prevent any back-bleed from background image */
+      background: rgba(5, 4, 6, 0.85);
       border: 1px solid rgba(255, 170, 0, 0.2);
       border-radius: 4px;
       color: var(--white);
@@ -293,6 +293,7 @@
 
   <nav>
     <a href="#" class="nav-brand">
+      <img src="/favicon.jpg" alt="BP Logo" class="nav-logo-badge">
       <span class="nav-title">Bruno Protocol</span>
     </a>
     <a href="https://ko-fi.com" target="_blank" class="support-btn">☕ Support Open Source</a>
@@ -320,7 +321,7 @@
     </section>
 
     <section class="biolume-panel">
-      <div class="panel-title sustain">🌱 Eco-Compute Energy Management System</div>
+      <div class="panel-title style='color: var(--biolume-green);'">🌱 Eco-Compute Energy Management System</div>
       
       <div class="control-group">
         <div class="control-header">
@@ -351,4 +352,169 @@
     </section>
   </div>
 
-  <footer style="text-align: center; padding: 20px; font-size: 10px; color:
+  <footer style="text-align: center; padding: 20px; font-size: 10px; color: rgba(255,170,0,0.4); letter-spacing: 0.1em; border-top: 1px solid rgba(255,170,0,0.05); margin-top: 40px;">
+    &copy; 2026 BRUNO PROTOCOL. ALL RIGHTS RESERVED. <br>
+    THE CYBERNETIC GOLDEN GUARDIAN MASCOT AND ASSOCIATED BRANDING ASSETS ARE PROPERTY OF THE PROTOCOL ECOSYSTEM AND PROTECTED UNDER REGISTERED COPYRIGHT & TRADEMARK.
+  </footer>
+
+  <script>
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    const vaScript = document.createElement('script');
+    vaScript.src = '/_vercel/insights/script.js';
+    vaScript.defer = true;
+    document.head.appendChild(vaScript);
+
+    document.getElementById('copy-btn').addEventListener('click', function() {
+      const outputText = document.getElementById('output-bru');
+      if (!outputText.value.trim()) return;
+
+      navigator.clipboard.writeText(outputText.value).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = 'Copied!';
+        btn.style.background = 'var(--biolume-green)';
+        btn.style.color = '#050406';
+        btn.style.borderColor = 'var(--biolume-green)';
+        
+        setTimeout(() => {
+          btn.textContent = 'Copy Code';
+          btn.style.background = 'rgba(255, 170, 0, 0.1)';
+          btn.style.color = 'var(--vibrant-gold)';
+          btn.style.borderColor = 'rgba(255, 170, 0, 0.3)';
+        }, 2000);
+      }).catch(err => {
+        console.error('System Clipboard Intercept Failed: ', err);
+      });
+    });
+
+    function parsePostmanItem(item, sequence = 1) {
+      let output = '';
+      if (!item) return output;
+
+      if (item.request) {
+        const req = item.request;
+        const method = (req.method || 'GET').toLowerCase();
+        const rawUrl = req.url?.raw || req.url || '';
+
+        output += `meta {\n  name: "${item.name || 'API Request'}"\n  type: "http"\n  seq: ${sequence}\n}\n\n`;
+        output += `${method} {\n  url: "${rawUrl}"\n`;
+
+        let bodyMode = 'none';
+        if (req.body) {
+          if (req.body.mode === 'raw') bodyMode = 'json';
+          else if (req.body.mode === 'formdata') bodyMode = 'multipart-form';
+          else if (req.body.mode === 'urlencoded') bodyMode = 'form-url-encoded';
+        }
+        output += `  body: ${bodyMode}\n`;
+
+        if (req.auth?.type === 'bearer') {
+          output += `  auth: bearer\n`;
+        } else {
+          output += `  auth: none\n`;
+        }
+        output += `}\n\n`;
+
+        if (req.header && req.header.length > 0) {
+          output += `headers {\n`;
+          req.header.forEach(h => {
+            if (!h.disabled) {
+              output += `  ${h.key}: ${h.value}\n`;
+            }
+          });
+          output += `}\n\n`;
+        }
+
+        if (req.auth?.type === 'bearer' && req.auth.bearer) {
+          const tokenObj = req.auth.bearer.find(b => b.key === 'token');
+          if (tokenObj) {
+            output += `auth:bearer {\n  token: ${tokenObj.value}\n}\n\n`;
+          }
+        }
+
+        if (req.body && req.body.mode === 'raw' && req.body.raw) {
+          output += `body:json {\n`;
+          try {
+            const cleanJson = JSON.stringify(JSON.parse(req.body.raw), null, 2);
+            output += cleanJson.split('\n').map(line => `  ${line}`).join('\n') + '\n';
+          } catch (e) {
+            output += `  ${req.body.raw}\n`;
+          }
+          output += `}\n\n`;
+        }
+
+        if (req.body && req.body.mode === 'formdata' && req.body.formdata) {
+          output += `body:multipart-form {\n`;
+          req.body.formdata.forEach(field => {
+            if (!field.disabled) {
+              const value = field.type === 'file' ? `@file(${field.src || ''})` : (field.value || '');
+              output += `  ${field.key}: ${value}\n`;
+            }
+          });
+          output += `}\n\n`;
+        }
+
+        if (req.body && req.body.mode === 'urlencoded' && req.body.urlencoded) {
+          output += `body:form-url-encoded {\n`;
+          req.body.urlencoded.forEach(field => {
+            if (!field.disabled) {
+              output += `  ${field.key}: ${field.value || ''}\n`;
+            }
+          });
+          output += `}\n\n`;
+        }
+
+        output += `// ────────────────────────────────────────────────────────\n\n`;
+      }
+
+      if (item.item && Array.isArray(item.item)) {
+        item.item.forEach((subItem, idx) => {
+          output += parsePostmanItem(subItem, sequence + idx);
+        });
+      }
+
+      return output;
+    }
+
+    document.getElementById('compile-trigger').addEventListener('click', function() {
+      const inputField = document.getElementById('input-json');
+      const outputField = document.getElementById('output-bru');
+      
+      if (!inputField.value.trim()) return;
+
+      try {
+        const postman = JSON.parse(inputField.value);
+        let compiledOutput = '';
+
+        if (postman.item && Array.isArray(postman.item)) {
+          postman.item.forEach((item, idx) => {
+            compiledOutput += parsePostmanItem(item, idx + 1);
+          });
+        }
+
+        outputField.value = compiledOutput || '# No executable request arrays located within this collection tree.';
+      } catch (e) {
+        outputField.value = '// Compilation AST Parse Error: ' + e.message + '\n// Validate structural format correctness.';
+      }
+    });
+
+    const teamSlider = document.getElementById('team-slider');
+    const reqSlider = document.getElementById('req-slider');
+    
+    function calculateSustainabilityOffsets() {
+      const teamSize = parseInt(teamSlider.value);
+      const reqCount = parseInt(reqSlider.value);
+      
+      document.getElementById('team-val').textContent = teamSize + ' devs';
+      document.getElementById('req-val').textContent = reqCount.toLocaleString() + ' reqs';
+      
+      const savedKgs = ((teamSize * reqCount * 12) * 0.0000153).toFixed(2);
+      const equivalentTrees = Math.max(1, Math.round(savedKgs / 22));
+
+      document.getElementById('carbon-val').textContent = savedKgs + ' kg CO₂e';
+      document.getElementById('tree-val').textContent = equivalentTrees + ' Mature Trees';
+    }
+
+    teamSlider.addEventListener('input', calculateSustainabilityOffsets);
+    reqSlider.addEventListener('input', calculateSustainabilityOffsets);
+  </script>
+</body>
+</html>
