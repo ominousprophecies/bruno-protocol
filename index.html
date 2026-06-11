@@ -37,6 +37,7 @@
       overflow-x: hidden;
     }
 
+    /* Goldenboy Unified Background Matrix Configuration */
     body::before {
       content: '';
       position: fixed;
@@ -44,9 +45,15 @@
       background: 
         radial-gradient(circle at 80% 20%, rgba(212, 106, 0, 0.08) 0%, transparent 40%),
         radial-gradient(circle at 20% 80%, rgba(255, 170, 0, 0.05) 0%, transparent 50%),
+        url("/brand-logo.jpg"),
         url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: center 35%;
+      background-size: auto 70vh; /* Scaled perfectly to dominate the center console */
+      background-blend-mode: overlay;
+      opacity: 0.12; /* Subtle, non-intrusive watermark presence */
       pointer-events: none;
-      z-index: 1000;
+      z-index: 0;
     }
 
     nav {
@@ -70,30 +77,11 @@
 
     .nav-title {
       font-family: 'Cinzel Decorative', serif;
-      font-size: 15px;
+      font-size: 16px;
       letter-spacing: 0.25em;
       color: var(--vibrant-gold);
       text-transform: uppercase;
       text-shadow: 0 0 10px rgba(255, 204, 51, 0.3);
-    }
-
-    .brand-logo-img {
-      width: 48px;
-      height: 48px;
-      object-fit: cover;
-      border-radius: 50%;
-      margin-right: 16px;
-      border: 2px solid var(--neon-amber);
-      /* Subtle amber backdrop tint to pop dark details out of header space */
-      background: rgba(255, 170, 0, 0.12);
-      box-shadow: 0 0 14px rgba(255, 170, 0, 0.4);
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-
-    .nav-brand:hover .brand-logo-img {
-      transform: scale(1.1) rotate(4deg);
-      border-color: var(--vibrant-gold);
-      box-shadow: 0 0 20px rgba(255, 204, 51, 0.7);
     }
 
     .support-btn {
@@ -127,13 +115,13 @@
     }
 
     .biolume-panel {
-      background: rgba(10, 8, 13, 0.6);
+      background: rgba(10, 8, 13, 0.65); /* Augmented slightly for cleaner contrast over backdrop */
       border: 1px solid rgba(255, 170, 0, 0.15);
       padding: 35px;
       margin-bottom: 45px;
       border-radius: 8px;
       backdrop-filter: blur(16px);
-      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
       position: relative;
     }
 
@@ -164,20 +152,45 @@
     .panel-node {
       display: flex;
       flex-direction: column;
+      position: relative;
+    }
+
+    .node-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
     }
 
     .node-label {
       font-size: 11px;
       color: var(--silver);
-      margin-bottom: 10px;
       text-transform: uppercase;
       letter-spacing: 0.12em;
+    }
+
+    .mini-copy-btn {
+      background: rgba(255, 170, 0, 0.1);
+      border: 1px solid rgba(255, 170, 0, 0.3);
+      color: var(--vibrant-gold);
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      padding: 4px 10px;
+      cursor: pointer;
+      border-radius: 3px;
+      transition: all 0.2s ease;
+    }
+
+    .mini-copy-btn:hover {
+      background: var(--neon-amber);
+      color: var(--black);
+      border-color: var(--vibrant-gold);
     }
 
     textarea {
       width: 100%;
       height: 340px;
-      background: rgba(5, 4, 6, 0.7);
+      background: rgba(5, 4, 6, 0.85); /* Darkened to prevent any back-bleed from background image */
       border: 1px solid rgba(255, 170, 0, 0.2);
       border-radius: 4px;
       color: var(--white);
@@ -280,7 +293,6 @@
 
   <nav>
     <a href="#" class="nav-brand">
-      <img src="/brand-logo.jpg" alt="Goldenboy - Apex Data Sentinel" class="brand-logo-img">
       <span class="nav-title">Bruno Protocol</span>
     </a>
     <a href="https://ko-fi.com" target="_blank" class="support-btn">☕ Support Open Source</a>
@@ -291,11 +303,16 @@
       <div class="panel-title">⚡ Neural Array Data Compiler</div>
       <div class="grid">
         <div class="panel-node">
-          <label class="node-label">Source Postman Payload Array (JSON)</label>
+          <div class="node-label-row">
+            <label class="node-label">Source Postman Payload Array (JSON)</label>
+          </div>
           <textarea id="input-json" placeholder="Paste your exported Postman collection structure directly here..."></textarea>
         </div>
         <div class="panel-node">
-          <label class="node-label">Compiled Native Plain-Text (.bru)</label>
+          <div class="node-label-row">
+            <label class="node-label">Compiled Native Plain-Text (.bru)</label>
+            <button class="mini-copy-btn" id="copy-btn">Copy Code</button>
+          </div>
           <textarea id="output-bru" placeholder="The localized execution matrix will compile here..." readonly></textarea>
         </div>
       </div>
@@ -334,149 +351,4 @@
     </section>
   </div>
 
-  <footer style="text-align: center; padding: 20px; font-size: 10px; color: rgba(255,170,0,0.4); letter-spacing: 0.1em; border-top: 1px solid rgba(255,170,0,0.05); margin-top: 40px;">
-    &copy; 2026 BRUNO PROTOCOL. ALL RIGHTS RESERVED. <br>
-    THE CYBERNETIC GOLDEN GUARDIAN MASCOT AND ASSOCIATED BRANDING ASSETS ARE PROPERTY OF THE PROTOCOL ECOSYSTEM AND PROTECTED UNDER REGISTERED COPYRIGHT & TRADEMARK.
-  </footer>
-
-  <script>
-    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-    const vaScript = document.createElement('script');
-    vaScript.src = '/_vercel/insights/script.js';
-    vaScript.defer = true;
-    document.head.appendChild(vaScript);
-
-    // ── UPGRADED DEEP OBJECT TRAVERSAL AST ENGINE ──────────────────────────
-    function parsePostmanItem(item, sequence = 1) {
-      let output = '';
-      if (!item) return output;
-
-      if (item.request) {
-        const req = item.request;
-        const method = (req.method || 'GET').toLowerCase();
-        const rawUrl = req.url?.raw || req.url || '';
-
-        output += `meta {\n  name: "${item.name || 'API Request'}"\n  type: "http"\n  seq: ${sequence}\n}\n\n`;
-        output += `${method} {\n  url: "${rawUrl}"\n`;
-
-        let bodyMode = 'none';
-        if (req.body) {
-          if (req.body.mode === 'raw') bodyMode = 'json';
-          else if (req.body.mode === 'formdata') bodyMode = 'multipart-form';
-          else if (req.body.mode === 'urlencoded') bodyMode = 'form-url-encoded';
-        }
-        output += `  body: ${bodyMode}\n`;
-
-        if (req.auth?.type === 'bearer') {
-          output += `  auth: bearer\n`;
-        } else {
-          output += `  auth: none\n`;
-        }
-        output += `}\n\n`;
-
-        if (req.header && req.header.length > 0) {
-          output += `headers {\n`;
-          req.header.forEach(h => {
-            if (!h.disabled) {
-              output += `  ${h.key}: ${h.value}\n`;
-            }
-          });
-          output += `}\n\n`;
-        }
-
-        if (req.auth?.type === 'bearer' && req.auth.bearer) {
-          const tokenObj = req.auth.bearer.find(b => b.key === 'token');
-          if (tokenObj) {
-            output += `auth:bearer {\n  token: ${tokenObj.value}\n}\n\n`;
-          }
-        }
-
-        if (req.body && req.body.mode === 'raw' && req.body.raw) {
-          output += `body:json {\n`;
-          try {
-            const cleanJson = JSON.stringify(JSON.parse(req.body.raw), null, 2);
-            output += cleanJson.split('\n').map(line => `  ${line}`).join('\n') + '\n';
-          } catch (e) {
-            output += `  ${req.body.raw}\n`;
-          }
-          output += `}\n\n`;
-        }
-
-        if (req.body && req.body.mode === 'formdata' && req.body.formdata) {
-          output += `body:multipart-form {\n`;
-          req.body.formdata.forEach(field => {
-            if (!field.disabled) {
-              const value = field.type === 'file' ? `@file(${field.src || ''})` : (field.value || '');
-              output += `  ${field.key}: ${value}\n`;
-            }
-          });
-          output += `}\n\n`;
-        }
-
-        if (req.body && req.body.mode === 'urlencoded' && req.body.urlencoded) {
-          output += `body:form-url-encoded {\n`;
-          req.body.urlencoded.forEach(field => {
-            if (!field.disabled) {
-              output += `  ${field.key}: ${field.value || ''}\n`;
-            }
-          });
-          output += `}\n\n`;
-        }
-
-        output += `// ────────────────────────────────────────────────────────\n\n`;
-      }
-
-      if (item.item && Array.isArray(item.item)) {
-        item.item.forEach((subItem, idx) => {
-          output += parsePostmanItem(subItem, sequence + idx);
-        });
-      }
-
-      return output;
-    }
-
-    document.getElementById('compile-trigger').addEventListener('click', function() {
-      const inputField = document.getElementById('input-json');
-      const outputField = document.getElementById('output-bru');
-      
-      if (!inputField.value.trim()) return;
-
-      try {
-        const postman = JSON.parse(inputField.value);
-        let compiledOutput = '';
-
-        if (postman.item && Array.isArray(postman.item)) {
-          postman.item.forEach((item, idx) => {
-            compiledOutput += parsePostmanItem(item, idx + 1);
-          });
-        }
-
-        outputField.value = compiledOutput || '# No executable request arrays located within this collection tree.';
-      } catch (e) {
-        outputField.value = '// Compilation AST Parse Error: ' + e.message + '\n// Validate structural format correctness.';
-      }
-    });
-
-    // ── SUSTAINABILITY MANAGEMENT SYSTEM ──────────────────────────
-    const teamSlider = document.getElementById('team-slider');
-    const reqSlider = document.getElementById('req-slider');
-    
-    function calculateSustainabilityOffsets() {
-      const teamSize = parseInt(teamSlider.value);
-      const reqCount = parseInt(reqSlider.value);
-      
-      document.getElementById('team-val').textContent = teamSize + ' devs';
-      document.getElementById('req-val').textContent = reqCount.toLocaleString() + ' reqs';
-      
-      const savedKgs = ((teamSize * reqCount * 12) * 0.0000153).toFixed(2);
-      const equivalentTrees = Math.max(1, Math.round(savedKgs / 22));
-
-      document.getElementById('carbon-val').textContent = savedKgs + ' kg CO₂e';
-      document.getElementById('tree-val').textContent = equivalentTrees + ' Mature Trees';
-    }
-
-    teamSlider.addEventListener('input', calculateSustainabilityOffsets);
-    reqSlider.addEventListener('input', calculateSustainabilityOffsets);
-  </script>
-</body>
-</html>
+  <footer style="text-align: center; padding: 20px; font-size: 10px; color:
