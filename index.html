@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bruno Protocol — Postman to .bru Compiler</title>
   
-  <link rel="icon" type="image/jpeg" href="/brand-logo.jpg">
-  <link rel="shortcut icon" type="image/jpeg" href="/brand-logo.jpg">
+  <!-- Goldenboy Mascot Tab Integration -->
+  <link rel="icon" type="image/jpeg" href="/brand-logo.JPG">
+  <link rel="shortcut icon" type="image/jpeg" href="/brand-logo.JPG">
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -278,7 +279,7 @@
 
   <nav>
     <a href="#" class="nav-brand">
-      <img src="/brand-logo.jpg" alt="Goldenboy - Apex Data Sentinel" class="brand-logo-img">
+      <img src="/brand-logo.JPG" alt="Goldenboy - Apex Data Sentinel" class="brand-logo-img">
       <span class="nav-title">Bruno Protocol</span>
     </a>
     <a href="https://ko-fi.com" target="_blank" class="support-btn">☕ Support Open Source</a>
@@ -341,4 +342,140 @@
     window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
     const vaScript = document.createElement('script');
     vaScript.src = '/_vercel/insights/script.js';
-    va
+    vaScript.defer = true;
+    document.head.appendChild(vaScript);
+
+    // ── UPGRADED DEEP OBJECT TRAVERSAL AST ENGINE ──────────────────────────
+    function parsePostmanItem(item, sequence = 1) {
+      let output = '';
+      if (!item) return output;
+
+      if (item.request) {
+        const req = item.request;
+        const method = (req.method || 'GET').toLowerCase();
+        const rawUrl = req.url?.raw || req.url || '';
+
+        output += `meta {\n  name: "${item.name || 'API Request'}"\n  type: "http"\n  seq: ${sequence}\n}\n\n`;
+        output += `${method} {\n  url: "${rawUrl}"\n`;
+
+        let bodyMode = 'none';
+        if (req.body) {
+          if (req.body.mode === 'raw') bodyMode = 'json';
+          else if (req.body.mode === 'formdata') bodyMode = 'multipart-form';
+          else if (req.body.mode === 'urlencoded') bodyMode = 'form-url-encoded';
+        }
+        output += `  body: ${bodyMode}\n`;
+
+        if (req.auth?.type === 'bearer') {
+          output += `  auth: bearer\n`;
+        } else {
+          output += `  auth: none\n`;
+        }
+        output += `}\n\n`;
+
+        if (req.header && req.header.length > 0) {
+          output += `headers {\n`;
+          req.header.forEach(h => {
+            if (!h.disabled) {
+              output += `  ${h.key}: ${h.value}\n`;
+            }
+          });
+          output += `}\n\n`;
+        }
+
+        if (req.auth?.type === 'bearer' && req.auth.bearer) {
+          const tokenObj = req.auth.bearer.find(b => b.key === 'token');
+          if (tokenObj) {
+            output += `auth:bearer {\n  token: ${tokenObj.value}\n}\n\n`;
+          }
+        }
+
+        if (req.body && req.body.mode === 'raw' && req.body.raw) {
+          output += `body:json {\n`;
+          try {
+            const cleanJson = JSON.stringify(JSON.parse(req.body.raw), null, 2);
+            output += cleanJson.split('\n').map(line => `  ${line}`).join('\n') + '\n';
+          } catch (e) {
+            output += `  ${req.body.raw}\n`;
+          }
+          output += `}\n\n`;
+        }
+
+        if (req.body && req.body.mode === 'formdata' && req.body.formdata) {
+          output += `body:multipart-form {\n`;
+          req.body.formdata.forEach(field => {
+            if (!field.disabled) {
+              const value = field.type === 'file' ? `@file(${field.src || ''})` : (field.value || '');
+              output += `  ${field.key}: ${value}\n`;
+            }
+          });
+          output += `}\n\n`;
+        }
+
+        if (req.body && req.body.mode === 'urlencoded' && req.body.urlencoded) {
+          output += `body:form-url-encoded {\n`;
+          req.body.urlencoded.forEach(field => {
+            if (!field.disabled) {
+              output += `  ${field.key}: ${field.value || ''}\n`;
+            }
+          });
+          output += `}\n\n`;
+        }
+
+        output += `// ────────────────────────────────────────────────────────\n\n`;
+      }
+
+      if (item.item && Array.isArray(item.item)) {
+        item.item.forEach((subItem, idx) => {
+          output += parsePostmanItem(subItem, sequence + idx);
+        });
+      }
+
+      return output;
+    }
+
+    document.getElementById('compile-trigger').addEventListener('click', function() {
+      const inputField = document.getElementById('input-json');
+      const outputField = document.getElementById('output-bru');
+      
+      if (!inputField.value.trim()) return;
+
+      try {
+        const postman = JSON.parse(inputField.value);
+        let compiledOutput = '';
+
+        if (postman.item && Array.isArray(postman.item)) {
+          postman.item.forEach((item, idx) => {
+            compiledOutput += parsePostmanItem(item, idx + 1);
+          });
+        }
+
+        outputField.value = compiledOutput || '# No executable request arrays located within this collection tree.';
+      } catch (e) {
+        outputField.value = '// Compilation AST Parse Error: ' + e.message + '\n// Validate structural format correctness.';
+      }
+    });
+
+    // ── SUSTAINABILITY MANAGEMENT SYSTEM ──────────────────────────
+    const teamSlider = document.getElementById('team-slider');
+    const reqSlider = document.getElementById('req-slider');
+    
+    function calculateSustainabilityOffsets() {
+      const teamSize = parseInt(teamSlider.value);
+      const reqCount = parseInt(reqSlider.value);
+      
+      document.getElementById('team-val').textContent = teamSize + ' devs';
+      document.getElementById('req-val').textContent = reqCount.toLocaleString() + ' reqs';
+      
+      const savedKgs = ((teamSize * reqCount * 12) * 0.0000153).toFixed(2);
+      const equivalentTrees = Math.max(1, Math.round(savedKgs / 22));
+
+      document.getElementById('carbon-val').textContent = savedKgs + ' kg CO₂e';
+      document.getElementById('tree-val').textContent = equivalentTrees + ' Mature Trees';
+    }
+
+    teamSlider.addEventListener('input', calculateSustainabilityOffsets);
+    reqSlider.addEventListener('input', calculateSustainabilityOffsets);
+  </script>
+</body>
+</html>
