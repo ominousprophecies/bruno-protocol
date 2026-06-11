@@ -267,3 +267,161 @@
 
     .metric-lbl {
       font-size: 10px;
+      color: var(--silver);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="#" class="nav-brand">
+      <svg class="cyber-guardian-logo" width="56" height="56" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M15 85 L28 42 Q42 16 76 22 C92 26 104 32 108 44 Q114 48 116 56 L114 66 L94 72 L86 98 L56 115 Z" stroke="#c9a84c" stroke-width="1" opacity="0.15" stroke-dasharray="2,2" />
+
+        <path class="initials-backbone" d="M66 22 L66 74" stroke="#c9a84c" stroke-width="3" stroke-linecap="round" />
+        <path class="initials-backbone" d="M66 22 C88 22 104 28 108 42 C112 56 114 62 114 66 L88 70 L66 70" stroke="#c9a84c" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" />
+
+        <path class="initials-backbone" d="M66 32 C42 26 28 44 32 64 C36 80 50 74 66 74" stroke="#c9a84c" stroke-width="2.5" stroke-linejoin="round" />
+        <path class="initials-backbone" d="M66 74 C36 74 34 94 44 104 C54 114 62 114 66 114" stroke="#c9a84c" stroke-width="2.5" stroke-linecap="round" />
+
+        <g stroke="#c9a84c" stroke-width="0.6" opacity="0.35">
+          <path class="wireframe-contour" d="M66 70 Q90 70 114 66" />
+          <path class="wireframe-contour" d="M66 58 Q88 58 110 54" />
+          <path class="wireframe-contour" d="M66 44 Q84 42 104 42" />
+          <path class="wireframe-contour" d="M32 64 Q50 64 66 54" />
+          <path class="wireframe-contour" d="M36 88 Q52 90 66 84" />
+          <path class="wireframe-contour" d="M44 104 L34 116" />
+          <path class="wireframe-contour" d="M56 110 L48 122" />
+          <path class="wireframe-contour" d="M66 114 L62 126" />
+        </g>
+
+        <g class="pcb-traces" stroke="#e8d5a3" stroke-width="1.5" stroke-linecap="round" opacity="0.85">
+          <path d="M102 60 L88 58 L76 64" />
+          <path d="M78 28 L84 36 L80 44" />
+          <path d="M48 84 L56 94 L66 94" />
+        </g>
+
+        <g class="hardware-nodes" fill="#e8d5a3">
+          <circle cx="114" cy="66" r="2.2" />
+          <circle cx="108" cy="42" r="1.8" />
+          <circle cx="32" cy="64" r="1.8" />
+          <circle cx="44" cy="104" r="1.8" />
+          <circle cx="66" cy="74" r="2.5" />
+          <circle cx="76" cy="64" r="1.5" />
+        </g>
+
+        <circle cx="84" cy="42" r="4.5" stroke="#e8d5a3" stroke-width="1.2" />
+        <circle cx="84" cy="42" r="1.5" fill="#e8d5a3" />
+      </svg>
+      <span class="nav-title">Bruno Protocol</span>
+    </a>
+    <a href="https://ko-fi.com" target="_blank" class="support-btn">☕ Support Open Source</a>
+  </nav>
+
+  <div class="container">
+    <section class="compiler-section">
+      <div class="compiler-title">⚡ Postman Collection to Plain-Text .bru Converter</div>
+      <div class="grid">
+        <div class="panel">
+          <label class="panel-label">Source Postman JSON (v2.1)</label>
+          <textarea id="input-json" placeholder="Paste your exported Postman collection JSON data here..."></textarea>
+        </div>
+        <div class="panel">
+          <label class="panel-label">Compiled Plain-Text .bru Output</label>
+          <textarea id="output-bru" placeholder="Your deterministic .bru file conversion will print here..." readonly></textarea>
+        </div>
+      </div>
+      <button class="compile-btn" id="compile-trigger">◆ Compile Array to Bru Formatting ◆</button>
+    </section>
+
+    <section class="dashboard-section">
+      <div class="dashboard-title">🌱 ISO/IEC 21031:2024 Software Carbon Intensity Dashboard</div>
+      
+      <div class="control-group">
+        <div class="control-header">
+          <span>Engineering Team Size</span>
+          <span id="team-val">15 devs</span>
+        </div>
+        <input type="range" id="team-slider" min="1" max="200" value="15">
+      </div>
+
+      <div class="control-group">
+        <div class="control-header">
+          <span>Monthly API Requests per Dev</span>
+          <span id="req-val">51,000 reqs</span>
+        </div>
+        <input type="range" id="req-slider" min="1000" max="200000" step="1000" value="51000">
+      </div>
+
+      <div class="results-row">
+        <div class="result-metric">
+          <span class="metric-val" id="carbon-val">94.30 kg CO₂e</span>
+          <span class="metric-lbl">Estimated Annual Saved Overhead</span>
+        </div>
+        <div class="result-metric">
+          <span class="metric-val" id="tree-val">4 Mature Trees</span>
+          <span class="metric-lbl">Environmental Equivalent Offset</span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // ── VERCEL PRIVACY-FIRST TELEMETRY FRAMEWORK ─────────────────────
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    const vaScript = document.createElement('script');
+    vaScript.src = '/_vercel/insights/script.js';
+    vaScript.defer = true;
+    document.head.appendChild(vaScript);
+
+    // ── DETERMINISTIC COMPILER LOGIC LAYER ──────────────────────────
+    document.getElementById('compile-trigger').addEventListener('click', function() {
+      const inputField = document.getElementById('input-json');
+      const outputField = document.getElementById('output-bru');
+      
+      if (!inputField.value.trim()) return;
+
+      try {
+        const postman = JSON.parse(inputField.value);
+        let bruOutput = '';
+
+        if (postman.item && Array.isArray(postman.item)) {
+          postman.item.forEach(item => {
+            if (item.request) {
+              bruOutput += 'meta {\n  name: "' + (item.name || 'API Request') + '"\n  type: "http"\n  seq: 1\n}\n\n';
+              bruOutput += (item.request.method || 'GET').toLowerCase() + ' {\n  url: "' + (item.request.url?.raw || item.request.url || '') + '"\n  body: "none"\n  auth: "none"\n}\n\n';
+            }
+          });
+        }
+
+        outputField.value = bruOutput || '# No explicitly structured request paths detected in object array.';
+      } catch (e) {
+        outputField.value = '// Compilation Matrix Error: ' + e.message + '\n// Ensure payload is an uncorrupted, stringified JSON file schema.';
+      }
+    });
+
+    // ── INTERACTIVE SUSTAINABILITY INTEL LOGIC ────────────────────────
+    const teamSlider = document.getElementById('team-slider');
+    const reqSlider = document.getElementById('req-slider');
+    
+    function calculateSustainabilityOffsets() {
+      const teamSize = parseInt(teamSlider.value);
+      const reqCount = parseInt(reqSlider.value);
+      
+      document.getElementById('team-val').textContent = teamSize + ' devs';
+      document.getElementById('req-val').textContent = reqCount.toLocaleString() + ' reqs';
+      
+      const savedKgs = ((teamSize * reqCount * 12) * 0.0000153).toFixed(2);
+      const equivalentTrees = Math.max(1, Math.round(savedKgs / 22));
+
+      document.getElementById('carbon-val').textContent = savedKgs + ' kg CO₂e';
+      document.getElementById('tree-val').textContent = equivalentTrees + ' Mature Trees';
+    }
+
+    teamSlider.addEventListener('input', calculateSustainabilityOffsets);
+    reqSlider.addEventListener('input', calculateSustainabilityOffsets);
+  </script>
+</body>
+</html>
