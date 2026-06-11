@@ -406,16 +406,47 @@
       }).catch(err => console.error('Clipboard error:', err));
     });
 
+    // ── Parse query params from URL string into Bruno params block
+    function extractQueryParams(rawUrl) {
+      try {
+        const qIdx = rawUrl.indexOf('?');
+        if (qIdx === -1) return { baseUrl: rawUrl, params: [] };
+        const baseUrl = rawUrl.slice(0, qIdx);
+        const queryStr = rawUrl.slice(qIdx + 1);
+        const params = queryStr.split('&').map(p => {
+          const [k, ...rest] = p.split('=');
+          return { key: decodeURIComponent(k || ''), value: decodeURIComponent(rest.join('=') || '') };
+        }).filter(p => p.key);
+        return { baseUrl, params };
+      } catch(e) { return { baseUrl: rawUrl, params: [] }; }
+    }
+
+    // ── Parse Postman event scripts into Bruno script blocks
+    function parseScripts(events) {
+      let pre = '', post = '';
+      if (!events || !Array.isArray(events)) return { pre, post };
+      events.forEach(ev => {
+        const script = ev.script?.exec?.join('\n') || '';
+        if (!script.trim()) return;
+        if (ev.listen === 'prerequest') pre = script;
+        if (ev.listen === 'test') post = script;
+      });
+      return { pre, post };
+    }
+
     function parsePostmanItem(item, sequence = 1) {
       let output = '';
       if (!item) return output;
       if (item.request) {
         const req = item.request;
         const method = (req.method || 'GET').toLowerCase();
-        const rawUrl = req.url?.raw || req.url || '';
-        output += `meta {\n  name: "${item.name || 'API Request'}"\n  type: "http"\n  seq: ${sequence}\n}\n\n`;
-        output += `${method} {\n  url: "${rawUrl}"\n`;
-        // Skip body:json entirely if raw body is empty or {}
+        const rawUrlFull = req.url?.raw || (typeof req.url === 'string' ? req.url : '') || '';
+        const { baseUrl, params } = extractQueryParams(rawUrlFull);
+
+        output += \`meta {\n  name: "\${item.name || 'API Request'}"\n  type: "http"\n  seq: \${sequence}\n}\n\n\`;
+        output += \`\${method} {\n  url: "\${baseUrl}"\n\`;
+
+        // body mode
         const rawBody = req.body?.raw?.trim() || '';
         const isEmptyRaw = !rawBody || rawBody === '{}' || rawBody === '[]';
         let bodyMode = 'none';
@@ -424,42 +455,65 @@
           else if (req.body.mode === 'formdata') bodyMode = 'multipart-form';
           else if (req.body.mode === 'urlencoded') bodyMode = 'form-url-encoded';
         }
-        output += `  body: ${bodyMode}\n`;
-        output += req.auth?.type === 'bearer' ? `  auth: bearer\n` : `  auth: none\n`;
-        output += `}\n\n`;
-        if (req.header?.length > 0) {
-          output += `headers {\n`;
-          req.header.forEach(h => { if (!h.disabled) output += `  ${h.key}: ${h.value}\n`; });
-          output += `}\n\n`;
+        output += \`  body: \${bodyMode}\n\`;
+        output += req.auth?.type === 'bearer' ? \`  auth: bearer\n\` : \`  auth: none\n\`;
+        output += \`}\n\n\`;
+
+        // params block (active + disabled with ~)
+        if (params.length > 0) {
+          output += \`params:query {\n\`;
+          params.forEach(p => { output += \`  \${p.key}: \${p.value}\n\`; });
+          output += \`}\n\n\`;
         }
+
+        // headers — active lines, disabled lines prefixed with ~
+        const headers = req.header || [];
+        if (headers.length > 0) {
+          output += \`headers {\n\`;
+          headers.forEach(h => {
+            output += h.disabled ? \`  ~\${h.key}: \${h.value}\n\` : \`  \${h.key}: \${h.value}\n\`;
+          });
+          output += \`}\n\n\`;
+        }
+
+        // bearer auth
         if (req.auth?.type === 'bearer' && req.auth.bearer) {
           const tokenObj = req.auth.bearer.find(b => b.key === 'token');
-          if (tokenObj) output += `auth:bearer {\n  token: ${tokenObj.value}\n}\n\n`;
+          if (tokenObj) output += \`auth:bearer {\n  token: \${tokenObj.value}\n}\n\n\`;
         }
+
+        // body blocks
         if (req.body?.mode === 'raw' && !isEmptyRaw) {
-          output += `body:json {\n`;
+          output += \`body:json {\n\`;
           try {
             const parsed = JSON.parse(rawBody);
-            const inner = JSON.stringify(parsed, null, 2)
-              .split('\n')
-              .slice(1, -1)
-              .map(l => `  ${l}`)
-              .join('\n');
+            const inner = JSON.stringify(parsed, null, 2).split('\n').slice(1, -1).map(l => \`  \${l}\`).join('\n');
             output += inner + '\n';
-          } catch (e) { output += `  ${rawBody}\n`; }
-          output += `}\n\n`;
+          } catch (e) { output += \`  \${rawBody}\n\`; }
+          output += \`}\n\n\`;
         }
         if (req.body?.mode === 'formdata' && req.body.formdata) {
-          output += `body:multipart-form {\n`;
-          req.body.formdata.forEach(f => { if (!f.disabled) output += `  ${f.key}: ${f.type === 'file' ? `@file(${f.src || ''})` : (f.value || '')}\n`; });
-          output += `}\n\n`;
+          output += \`body:multipart-form {\n\`;
+          req.body.formdata.forEach(f => {
+            const line = \`  \${f.key}: \${f.type === 'file' ? \`@file(\${f.src || ''})\` : (f.value || '')}\n\`;
+            output += f.disabled ? '  ~' + line.trimStart() : line;
+          });
+          output += \`}\n\n\`;
         }
         if (req.body?.mode === 'urlencoded' && req.body.urlencoded) {
-          output += `body:form-url-encoded {\n`;
-          req.body.urlencoded.forEach(f => { if (!f.disabled) output += `  ${f.key}: ${f.value || ''}\n`; });
-          output += `}\n\n`;
+          output += \`body:form-url-encoded {\n\`;
+          req.body.urlencoded.forEach(f => {
+            output += f.disabled ? \`  ~\${f.key}: \${f.value || ''}\n\` : \`  \${f.key}: \${f.value || ''}\n\`;
+          });
+          output += \`}\n\n\`;
         }
-        output += `// ────────────────────────────────────────────────────────\n\n`;
+
+        // pre-request and test scripts
+        const { pre, post } = parseScripts(item.event);
+        if (pre) output += \`script:pre-request {\n\${pre.split('\n').map(l => '  ' + l).join('\n')}\n}\n\n\`;
+        if (post) output += \`script:post-response {\n\${post.split('\n').map(l => '  ' + l).join('\n')}\n}\n\n\`;
+
+        output += \`// ────────────────────────────────────────────────────────\n\n\`;
       }
       if (item.item && Array.isArray(item.item)) {
         item.item.forEach((subItem, idx) => { output += parsePostmanItem(subItem, sequence + idx); });
@@ -475,13 +529,21 @@
       return unique;
     }
 
-    function renderEnvOutputs(bruText) {
-      const vars = extractEnvVars(bruText);
-      document.getElementById('output-env').value = vars.length
-        ? vars.map(v => v + '=').join('\n')
+    function renderEnvOutputs(bruText, collectionVars) {
+      const templateVars = extractEnvVars(bruText);
+      // Merge collection-level vars (may have default values) with template vars found in output
+      const seeded = {};
+      if (collectionVars && Array.isArray(collectionVars)) {
+        collectionVars.forEach(v => { if (v.key) seeded[v.key] = v.value || ''; });
+      }
+      // Add any {{vars}} from output not already covered
+      templateVars.forEach(v => { if (!(v in seeded)) seeded[v] = ''; });
+      const keys = Object.keys(seeded);
+      document.getElementById('output-env').value = keys.length
+        ? keys.map(k => k + '=' + seeded[k]).join('\n')
         : '# No variables found';
-      document.getElementById('output-brunenv').value = vars.length
-        ? 'vars {\n' + vars.map(v => '  ' + v + ':').join('\n') + '\n}'
+      document.getElementById('output-brunenv').value = keys.length
+        ? 'vars {\n' + keys.map(k => '  ' + k + ': ' + seeded[k]).join('\n') + '\n}'
         : '# No variables found';
     }
 
@@ -499,8 +561,19 @@
           }
         });
       }
-      const rootName = ((collection.info && collection.info.name) || 'collection').replace(/[^a-z0-9\-_]/gi, '-').toLowerCase();
+      const collectionName = (collection.info && collection.info.name) || 'collection';
+      const rootName = collectionName.replace(/[^a-z0-9\-_]/gi, '-').toLowerCase();
       if (collection.item && Array.isArray(collection.item)) walk(collection.item, rootName);
+
+      // ── Generate bruno.json at collection root (required for Bruno to load folder)
+      const brunoJson = JSON.stringify({
+        version: '1',
+        name: collectionName,
+        type: 'collection',
+        ignore: []
+      }, null, 2);
+      tree[rootName + '/bruno.json'] = brunoJson;
+
       return { rootName, tree };
     }
 
@@ -558,7 +631,7 @@
           postman.item.forEach((item, idx) => { compiledOutput += parsePostmanItem(item, idx + 1); });
         }
         outputField.value = compiledOutput || '# No executable request arrays located within this collection tree.';
-        renderEnvOutputs(compiledOutput);
+        renderEnvOutputs(compiledOutput, postman.variable);
         const { rootName, tree } = buildFolderStructure(postman);
         renderFolderTree(tree, rootName);
         window._lastTree = tree;
