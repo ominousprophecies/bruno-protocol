@@ -1,98 +1,133 @@
-// Wait until the HTML elements are fully parsed in the browser window
-document.addEventListener("DOMContentLoaded", function () {
-  
-  // 1. Identify and cache all interface elements
-  var postmanInput = document.getElementById("postmanInput");
-  var brunoOutput = document.getElementById("brunoOutput");
-  var btnConvert = document.getElementById("btnConvert");
-  var btnCopy = document.getElementById("btnCopy");
+function parsePostmanItem(item, sequence = 1) {
+  let output = '';
+  if (!item) return output;
 
-  var sliderTeamSize = document.getElementById("sliderTeamSize");
-  var sliderRequests = document.getElementById("sliderRequests");
-  var selectRegion = document.getElementById("selectRegion");
+  if (item.request) {
+    const req = item.request;
+    const method = (req.method || 'GET').toLowerCase();
+    const rawUrl = req.url?.raw || req.url || '';
 
-  var valTeamSize = document.getElementById("valTeamSize");
-  var valRequests = document.getElementById("valRequests");
-  var metricKgSaved = document.getElementById("metricKgSaved");
-  var metricTreesCount = document.getElementById("metricTreesCount");
+    output += `meta {\n  name: "${item.name || 'API Request'}"\n  type: "http"\n  seq: ${sequence}\n}\n\n`;
+    output += `${method} {\n  url: "${rawUrl}"\n`;
 
-  // 2. Define the Conversion Trigger Function
-  if (btnConvert) {
-    btnConvert.addEventListener("click", function () {
-      try {
-        var rawText = postmanInput.value.trim();
-        if (!rawText) {
-          alert("Input Empty: Please paste your raw Postman v2.1 collection JSON string.");
-          return;
-        }
-
-        var parsedJson = JSON.parse(rawText);
-        var convertedFiles = convertPostmanToBruno(parsedJson);
-
-        if (convertedFiles && convertedFiles.length > 0) {
-          // Display the first converted file preview inside our code view panel
-          brunoOutput.value = convertedFiles[0].content;
-        } else {
-          brunoOutput.value = "// Conversion parsed successfully, but no individual requests were found.";
-        }
-      } catch (err) {
-        brunoOutput.value = "// Compilation Exception:\n// " + err.message;
-      }
-    });
-  }
-
-  // 3. --- COPY TO CLIPBOARD UX FUNCTION ---
-  if (btnCopy) {
-    btnCopy.addEventListener("click", function () {
-      var outputText = brunoOutput.value;
-      
-      if (!outputText || outputText.startsWith("//") || outputText.trim() === "") {
-        alert("Nothing to copy yet! Please convert a valid Postman collection first.");
-        return;
-      }
-
-      // Use the modern browser Clipboard API
-      navigator.clipboard.writeText(outputText).then(function () {
-        // Visual feedback loop change
-        btnCopy.innerText = "✅ Copied!";
-        btnCopy.style.backgroundColor = "#10b981";
-
-        // Reset button state back to standard after 2 seconds
-        setTimeout(function () {
-          btnCopy.innerText = "📋 Copy Code";
-          btnCopy.style.backgroundColor = "#334155";
-        }, 2000);
-      }).catch(function (err) {
-        console.error("Could not copy text: ", err);
-      });
-    });
-  }
-
-  // 4. Define the Carbon Metric Calculation Trigger Function
-  function updateCarbonMetrics() {
-    var team = parseInt(sliderTeamSize.value, 10);
-    var reqs = parseInt(sliderRequests.value, 10);
-    var region = selectRegion.value;
-
-    // Update the layout labels over the sliders in real-time
-    if (valTeamSize) valTeamSize.innerText = team + " devs";
-    if (valRequests) valRequests.innerText = reqs.toLocaleString() + " reqs";
-
-    // Run the data through our standard ISO formula calculation engine
-    if (typeof calculateSoftwareCarbonIntensity === "function") {
-      var results = calculateSoftwareCarbonIntensity(team, reqs, region);
-      
-      // Push calculated numerical metrics back out to the UI card text layout
-      if (metricKgSaved) metricKgSaved.innerText = results.annualKgSaved.toFixed(2) + " kg CO₂e";
-      if (metricTreesCount) metricTreesCount.innerText = results.treeEquivalencyCount + " Mature Trees";
+    let bodyMode = 'none';
+    if (req.body) {
+      if (req.body.mode === 'raw') bodyMode = 'json';
+      else if (req.body.mode === 'formdata') bodyMode = 'multipart-form';
+      else if (req.body.mode === 'urlencoded') bodyMode = 'form-url-encoded';
     }
+    output += `  body: ${bodyMode}\n`;
+    output += req.auth?.type === 'bearer' ? `  auth: bearer\n` : `  auth: none\n`;
+    output += `}\n\n`;
+
+    if (req.header?.length > 0) {
+      output += `headers {\n`;
+      req.header.forEach(h => { if (!h.disabled) output += `  ${h.key}: ${h.value}\n`; });
+      output += `}\n\n`;
+    }
+
+    if (req.auth?.type === 'bearer' && req.auth.bearer) {
+      const tokenObj = req.auth.bearer.find(b => b.key === 'token');
+      if (tokenObj) output += `auth:bearer {\n  token: ${tokenObj.value}\n}\n\n`;
+    }
+
+    // ── JSON body — strip outer { } since body:json { } is already the wrapper
+    if (req.body?.mode === 'raw' && req.body.raw) {
+      output += `body:json {\n`;
+      try {
+        const parsed = JSON.parse(req.body.raw);
+        const inner = JSON.stringify(parsed, null, 2)
+          .split('\n')
+          .slice(1, -1)           // drop first "{" line and last "}" line
+          .map(l => `  ${l}`)     // indent everything two spaces
+          .join('\n');
+        output += inner + '\n';
+      } catch (e) {
+        output += `  ${req.body.raw}\n`;
+      }
+      output += `}\n\n`;
+    }
+
+    if (req.body?.mode === 'formdata' && req.body.formdata) {
+      output += `body:multipart-form {\n`;
+      req.body.formdata.forEach(f => {
+        if (!f.disabled) output += `  ${f.key}: ${f.type === 'file' ? `@file(${f.src || ''})` : (f.value || '')}\n`;
+      });
+      output += `}\n\n`;
+    }
+
+    if (req.body?.mode === 'urlencoded' && req.body.urlencoded) {
+      output += `body:form-url-encoded {\n`;
+      req.body.urlencoded.forEach(f => {
+        if (!f.disabled) output += `  ${f.key}: ${f.value || ''}\n`;
+      });
+      output += `}\n\n`;
+    }
+
+    output += `// ────────────────────────────────────────────────────────\n\n`;
   }
 
-  // 5. Bind listeners to all sliders to calculate on every adjustment drag
-  if (sliderTeamSize) sliderTeamSize.addEventListener("input", updateCarbonMetrics);
-  if (sliderRequests) sliderRequests.addEventListener("input", updateCarbonMetrics);
-  if (selectRegion) selectRegion.addEventListener("change", updateCarbonMetrics);
+  if (item.item && Array.isArray(item.item)) {
+    item.item.forEach((subItem, idx) => {
+      output += parsePostmanItem(subItem, sequence + idx);
+    });
+  }
 
-  // 6. Run an initial calculation pass immediately on page load
-  updateCarbonMetrics();
+  return output;
+}
+
+// ── Compile button
+document.getElementById('compile-trigger').addEventListener('click', function () {
+  const inputField = document.getElementById('input-json');
+  const outputField = document.getElementById('output-bru');
+  if (!inputField.value.trim()) return;
+  try {
+    const postman = JSON.parse(inputField.value);
+    let compiledOutput = '';
+    if (postman.item && Array.isArray(postman.item)) {
+      postman.item.forEach((item, idx) => {
+        compiledOutput += parsePostmanItem(item, idx + 1);
+      });
+    }
+    outputField.value = compiledOutput || '# No executable request arrays located within this collection tree.';
+  } catch (e) {
+    outputField.value = '// Compilation AST Parse Error: ' + e.message + '\n// Validate structural format correctness.';
+  }
 });
+
+// ── Copy button
+document.getElementById('copy-btn').addEventListener('click', function () {
+  const outputText = document.getElementById('output-bru');
+  if (!outputText.value.trim()) return;
+  navigator.clipboard.writeText(outputText.value).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied!';
+    btn.style.background = 'var(--biolume-green)';
+    btn.style.color = '#050406';
+    btn.style.borderColor = 'var(--biolume-green)';
+    setTimeout(() => {
+      btn.textContent = 'Copy Code';
+      btn.style.background = 'rgba(255, 170, 0, 0.1)';
+      btn.style.color = 'var(--vibrant-gold)';
+      btn.style.borderColor = 'rgba(255, 170, 0, 0.3)';
+    }, 2000);
+  }).catch(err => console.error('Clipboard error:', err));
+});
+
+// ── Sustainability sliders
+const teamSlider = document.getElementById('team-slider');
+const reqSlider = document.getElementById('req-slider');
+
+function calculateSustainabilityOffsets() {
+  const teamSize = parseInt(teamSlider.value);
+  const reqCount = parseInt(reqSlider.value);
+  document.getElementById('team-val').textContent = teamSize + ' devs';
+  document.getElementById('req-val').textContent = reqCount.toLocaleString() + ' reqs';
+  const savedKgs = ((teamSize * reqCount * 12) * 0.0000153).toFixed(2);
+  const equivalentTrees = Math.max(1, Math.round(savedKgs / 22));
+  document.getElementById('carbon-val').textContent = savedKgs + ' kg CO₂e';
+  document.getElementById('tree-val').textContent = equivalentTrees + ' Mature Trees';
+}
+
+teamSlider.addEventListener('input', calculateSustainabilityOffsets);
+reqSlider.addEventListener('input', calculateSustainabilityOffsets);
