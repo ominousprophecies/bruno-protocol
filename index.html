@@ -895,21 +895,41 @@
       // Parse URL into Postman host/path/query structure
       let urlObj = { raw: rawUrl };
       try {
-        // Handle template variables in URL for parsing
-        const cleanUrl = rawUrl.replace(/\{\{[^}]+\}\}/g, 'PLACEHOLDER');
-        const u = new URL(cleanUrl);
-        urlObj = {
-          raw: rawUrl,
-          protocol: u.protocol.replace(':', ''),
-          host: u.hostname.split('.'),
-          path: u.pathname.split('/').filter(Boolean),
-          query: req.queryParams.map(p => ({
-            key: p.key,
-            value: p.value,
-            disabled: p.disabled || undefined
-          }))
-        };
-        if (u.port) urlObj.port = u.port;
+        // Only parse URLs without template variables to avoid PLACEHOLDER corruption
+        if (!rawUrl.includes('{{')) {
+          const u = new URL(rawUrl);
+          urlObj = {
+            raw: rawUrl,
+            protocol: u.protocol.replace(':', ''),
+            host: u.hostname.split('.'),
+            path: u.pathname.split('/').filter(Boolean),
+            query: req.queryParams.map(p => ({
+              key: p.key,
+              value: p.value,
+              disabled: p.disabled || undefined
+            }))
+          };
+          if (u.port) urlObj.port = u.port;
+        } else {
+          // URL has template variables — parse manually without substitution
+          const noQuery = rawUrl.split('?')[0];
+          const proto = noQuery.split('://')[0];
+          const rest = noQuery.split('://')[1] || '';
+          const hostAndPath = rest.split('/');
+          const host = (hostAndPath[0] || '').split('.');
+          const path = hostAndPath.slice(1).filter(Boolean);
+          urlObj = {
+            raw: rawUrl,
+            protocol: proto,
+            host,
+            path,
+            query: req.queryParams.map(p => ({
+              key: p.key,
+              value: p.value,
+              disabled: p.disabled || undefined
+            }))
+          };
+        }
       } catch(e) { /* keep raw only */ }
 
       // Headers
