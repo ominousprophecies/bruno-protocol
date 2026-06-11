@@ -368,11 +368,15 @@
     </section>
 
     <section class="biolume-panel">
-      <div class="panel-title" style="color: var(--biolume-green);">🌱 Eco-Compute Energy Management System</div>
-      
+      <div class="panel-title" style="color: var(--biolume-green);">🌱 Post-Migration Savings Estimator</div>
+      <p style="font-size: 11px; color: var(--silver); margin-bottom: 18px; line-height: 1.6; opacity: 0.8;">
+        This tool converts your Postman collections to Bruno format. Bruno runs entirely local — no cloud sync, no telemetry, no server round-trips. If your team completes the migration and adopts Bruno as their daily API client, the cloud sync overhead they currently generate disappears.
+        The calculator below estimates what that would save. Methodology: IEA (2022) global average data centre intensity 0.300 kg CO₂/kWh · Andrae &amp; Edler (2015) network transmission ~0.000006 kWh/MB · cloud tool sync op ~0.000015 kWh (server compute + ~1.5MB avg collection) · local Bruno compile ~0.0000000167 kWh (60W laptop, 1ms). Assumptions shown — not marketing.
+      </p>
+
       <div class="control-group">
         <div class="control-header">
-          <span>Active Operations Engine Size</span>
+          <span>Team Size</span>
           <span id="team-val" style="color: var(--vibrant-gold); font-weight: bold;">15 devs</span>
         </div>
         <input type="range" id="team-slider" min="1" max="200" value="15">
@@ -380,20 +384,28 @@
 
       <div class="control-group">
         <div class="control-header">
-          <span>Monthly Micro-Bus Queries Per Node</span>
-          <span id="req-val" style="color: var(--vibrant-gold); font-weight: bold;">51,000 reqs</span>
+          <span>Postman Cloud Syncs / Month (current)</span>
+          <span id="req-val" style="color: var(--vibrant-gold); font-weight: bold;">5,000 syncs</span>
         </div>
-        <input type="range" id="req-slider" min="1000" max="200000" step="1000" value="51000">
+        <input type="range" id="req-slider" min="100" max="50000" step="100" value="5000">
       </div>
 
       <div class="results-row">
         <div class="result-metric">
-          <span class="metric-val" id="carbon-val">94.30 kg CO₂e</span>
-          <span class="metric-lbl">Prevented Carbon Overhead Offset</span>
+          <span class="metric-val" id="trad-compute">— kWh</span>
+          <span class="metric-lbl">Cloud tool energy (server + network)</span>
         </div>
         <div class="result-metric">
-          <span class="metric-val" id="tree-val" style="color: var(--biolume-green);">4 Mature Trees</span>
-          <span class="metric-lbl">Environmental Absorption Equivalent</span>
+          <span class="metric-val" id="bp-compute" style="color: var(--biolume-green);">— kWh</span>
+          <span class="metric-lbl">Bruno Protocol energy (local only)</span>
+        </div>
+        <div class="result-metric">
+          <span class="metric-val" id="energy-saved">— kWh</span>
+          <span class="metric-lbl">Energy avoided</span>
+        </div>
+        <div class="result-metric">
+          <span class="metric-val" id="co2-offset" style="color: var(--biolume-green);">— kg CO₂</span>
+          <span class="metric-lbl">CO₂ avoided · IEA 2022 global avg</span>
         </div>
       </div>
     </section>
@@ -1060,15 +1072,26 @@
 
     function calculateSustainabilityOffsets() {
       const teamSize = parseInt(teamSlider.value);
-      const reqCount = parseInt(reqSlider.value);
-      const traditional = teamSize * reqCount * 0.003;
-      const brunoProtocol = traditional * 0.0001;
+      const syncOps = parseInt(reqSlider.value);
+      // Cloud tool: ~0.000015 kWh per sync op (IEA 2022: server compute + 0.000006 kWh/MB network, ~1.5MB avg collection)
+      const traditional = teamSize * syncOps * 0.000015;
+      // Bruno Protocol: local compile only, ~0.0000000167 kWh per op (60W laptop, 1ms)
+      const brunoProtocol = teamSize * syncOps * 0.0000000167;
       const saved = traditional - brunoProtocol;
-      document.getElementById('trad-compute').textContent = traditional.toFixed(4) + ' kWh';
-      document.getElementById('bp-compute').textContent = brunoProtocol.toFixed(6) + ' kWh';
-      document.getElementById('energy-saved').textContent = saved.toFixed(4) + ' kWh';
-      document.getElementById('co2-offset').textContent = (saved * 0.386).toFixed(4) + ' kg CO₂';
+      // CO2: IEA 2022 global average data centre intensity 0.300 kg CO2/kWh
+      document.getElementById('trad-compute').textContent = traditional.toFixed(6) + ' kWh';
+      document.getElementById('bp-compute').textContent = brunoProtocol.toFixed(9) + ' kWh';
+      document.getElementById('energy-saved').textContent = saved.toFixed(6) + ' kWh';
+      document.getElementById('co2-offset').textContent = (saved * 0.300).toFixed(6) + ' kg CO₂';
+
+      // Update slider labels
+      const teamVal = document.getElementById('team-val');
+      const reqVal = document.getElementById('req-val');
+      if (teamVal) teamVal.textContent = teamSize + ' dev' + (teamSize > 1 ? 's' : '');
+      if (reqVal) reqVal.textContent = syncOps.toLocaleString() + ' syncs/mo';
     }
+
+    calculateSustainabilityOffsets();
 
     teamSlider.addEventListener('input', calculateSustainabilityOffsets);
     reqSlider.addEventListener('input', calculateSustainabilityOffsets);
