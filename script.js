@@ -135,3 +135,6 @@ function calculateSustainabilityOffsets() {
 
 teamSlider.addEventListener('input', calculateSustainabilityOffsets);
 reqSlider.addEventListener('input', calculateSustainabilityOffsets);
+git add script.js
+git commit -m "fix: skip body:json block for empty bodies"
+git push
