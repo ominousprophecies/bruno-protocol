@@ -13,14 +13,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --black: #050406;
-      --void: #0a080d;
-      --neon-amber: #ffaa00;
-      --vibrant-gold: #ffcc33;
-      --deep-copper: #d46a00;
-      --silver: #cec9dc;
-      --white: #f5f2fa;
-      --biolume-green: #39ff14;
+      --black: #080608;
+      --void: #0d0a10;
+      --gold: #c9a84c;
+      --pale-gold: #e8d5a3;
+      --silver: #e2deee;
+      --white: #f0edf5;
+      --accent-green: #4caf50;
     }
 
     *, *::before, *::after {
@@ -37,30 +36,25 @@
       overflow-x: hidden;
     }
 
-    /* Vibrant ambient background pulse simulating neural flow */
     body::before {
       content: '';
       position: fixed;
       inset: 0;
-      background: 
-        radial-gradient(circle at 80% 20%, rgba(212, 106, 0, 0.08) 0%, transparent 40%),
-        radial-gradient(circle at 20% 80%, rgba(255, 170, 0, 0.05) 0%, transparent 50%),
-        url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
       pointer-events: none;
       z-index: 1000;
+      opacity: 0.5;
     }
 
     nav {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 24px 40px;
-      border-bottom: 1px solid rgba(255, 170, 0, 0.25);
-      background: linear-gradient(180deg, var(--void) 0%, rgba(10, 8, 13, 0.8) 100%);
-      backdrop-filter: blur(12px);
+      padding: 20px 40px;
+      border-bottom: 1px solid rgba(201, 168, 76, 0.15);
+      background: var(--void);
       position: relative;
       z-index: 10;
-      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
     }
 
     .nav-brand {
@@ -71,228 +65,185 @@
 
     .nav-title {
       font-family: 'Cinzel Decorative', serif;
-      font-size: 15px;
-      letter-spacing: 0.25em;
-      color: var(--vibrant-gold);
+      font-size: 14px;
+      letter-spacing: 0.2em;
+      color: var(--pale-gold);
       text-transform: uppercase;
-      text-shadow: 0 0 10px rgba(255, 204, 51, 0.3);
     }
 
-    /* Framed container optimized for the vibrant cyber-lab portrait */
     .brand-logo-img {
-      width: 48px;
-      height: 48px;
+      width: 44px;
+      height: 44px;
       object-fit: cover;
-      border-radius: 50%;
-      margin-right: 16px;
-      border: 2px solid var(--neon-amber);
-      box-shadow: 0 0 14px rgba(255, 170, 0, 0.4);
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      border-radius: 4px;
+      margin-right: 14px;
+      border: 1px solid rgba(201, 168, 76, 0.25);
+      filter: drop-shadow(0 0 6px rgba(201, 168, 76, 0.2));
+      transition: all 0.4s ease;
     }
 
     .nav-brand:hover .brand-logo-img {
-      transform: scale(1.1) rotate(4deg);
-      border-color: var(--vibrant-gold);
-      box-shadow: 0 0 20px rgba(255, 204, 51, 0.7);
+      transform: scale(1.05);
+      border-color: var(--gold);
+      filter: drop-shadow(0 0 12px rgba(232, 213, 163, 0.4));
     }
 
     .support-btn {
       font-family: 'Cinzel', serif;
       font-size: 11px;
-      letter-spacing: 0.15em;
+      letter-spacing: 0.1em;
       color: var(--black);
-      background: linear-gradient(135deg, var(--vibrant-gold) 0%, var(--neon-amber) 100%);
+      background: var(--gold);
       border: none;
-      padding: 12px 24px;
+      padding: 10px 20px;
       cursor: pointer;
       text-transform: uppercase;
       text-decoration: none;
       font-weight: bold;
-      border-radius: 2px;
-      box-shadow: 0 0 15px rgba(255, 170, 0, 0.3);
-      transition: all 0.3s ease;
+      transition: opacity 0.2s ease;
     }
 
     .support-btn:hover {
-      box-shadow: 0 0 25px rgba(255, 204, 51, 0.6);
-      transform: translateY(-1px);
+      opacity: 0.85;
     }
 
     .container {
       max-width: 1200px;
       margin: 0 auto;
-      padding: 50px 20px;
+      padding: 40px 20px;
       position: relative;
       z-index: 5;
     }
 
-    /* Vibrant Bioluminescent Glassmorphism Panel Container */
-    .biolume-panel {
-      background: rgba(10, 8, 13, 0.6);
-      border: 1px solid rgba(255, 170, 0, 0.15);
-      padding: 35px;
-      margin-bottom: 45px;
-      border-radius: 8px;
-      backdrop-filter: blur(16px);
-      box-shadow: 
-        0 8px 32px 0 rgba(0, 0, 0, 0.37),
-        inset 0 0 15px rgba(255, 170, 0, 0.03);
-      position: relative;
-      overflow: hidden;
-      transition: border-color 0.4s ease, box-shadow 0.4s ease;
+    .compiler-section {
+      background: var(--void);
+      border: 1px solid rgba(201, 168, 76, 0.1);
+      padding: 30px;
+      margin-bottom: 40px;
+      border-radius: 4px;
     }
 
-    .biolume-panel::after {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, var(--neon-amber), transparent);
-      opacity: 0.4;
-    }
-
-    .biolume-panel:hover {
-      border-color: rgba(255, 204, 51, 0.3);
-      box-shadow: 
-        0 12px 40px 0 rgba(0, 0, 0, 0.5),
-        0 0 20px rgba(255, 170, 0, 0.05);
-    }
-
-    .panel-title {
+    .compiler-title {
       font-family: 'Cinzel', serif;
       font-size: 16px;
-      color: var(--vibrant-gold);
-      margin-bottom: 24px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .panel-title.sustain {
-      color: var(--biolume-green);
+      color: var(--gold);
+      margin-bottom: 20px;
+      letter-spacing: 0.05em;
     }
 
     .grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 35px;
-      margin-bottom: 28px;
+      gap: 30px;
+      margin-bottom: 24px;
     }
 
     @media (max-width: 768px) {
       .grid { grid-template-columns: 1fr; }
       nav { padding: 15px 20px; }
-      .nav-title { font-size: 12px; }
+      .nav-title { font-size: 11px; }
     }
 
-    .panel-node {
+    .panel {
       display: flex;
       flex-direction: column;
     }
 
-    .node-label {
+    .panel-label {
       font-size: 11px;
       color: var(--silver);
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       text-transform: uppercase;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.1em;
     }
 
     textarea {
       width: 100%;
-      height: 300px;
-      background: rgba(5, 4, 6, 0.7);
-      border: 1px solid rgba(255, 170, 0, 0.2);
-      border-radius: 4px;
+      height: 280px;
+      background: rgba(8, 6, 8, 0.6);
+      border: 1px solid rgba(201, 168, 76, 0.2);
       color: var(--white);
       font-family: 'Space Mono', monospace;
-      font-size: 13px;
-      padding: 18px;
+      font-size: 12px;
+      padding: 16px;
       resize: none;
       outline: none;
-      box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
-      transition: all 0.3s ease;
+      transition: border-color 0.3s;
     }
 
     textarea:focus {
-      border-color: var(--vibrant-gold);
-      box-shadow: 
-        inset 0 2px 8px rgba(0,0,0,0.8),
-        0 0 12px rgba(255, 170, 0, 0.15);
+      border-color: var(--gold);
     }
 
-    /* Vibrant Pulse Matrix Action Trigger Button */
-    .pulse-btn {
+    .compile-btn {
       width: 100%;
       background: transparent;
-      border: 1px solid var(--neon-amber);
-      color: var(--neon-amber);
+      border: 1px solid var(--gold);
+      color: var(--gold);
       font-family: 'Cinzel', serif;
-      font-size: 13px;
-      letter-spacing: 0.25em;
+      font-size: 12px;
+      letter-spacing: 0.2em;
       text-transform: uppercase;
-      padding: 16px;
+      padding: 14px;
       cursor: pointer;
-      border-radius: 4px;
-      position: relative;
-      overflow: hidden;
-      font-weight: bold;
-      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.3s ease;
     }
 
-    .pulse-btn:hover {
-      background: linear-gradient(135deg, rgba(255, 170, 0, 0.15) 0%, rgba(214, 106, 0, 0.15) 100%);
-      color: #ffffff;
-      border-color: var(--vibrant-gold);
-      box-shadow: 0 0 20px rgba(255, 170, 0, 0.2);
-      text-shadow: 0 0 8px #ffffff;
+    .compile-btn:hover {
+      background: var(--gold);
+      color: var(--black);
+    }
+
+    .dashboard-section {
+      background: var(--void);
+      border: 1px solid rgba(201, 168, 76, 0.1);
+      padding: 30px;
+      border-radius: 4px;
+    }
+
+    .dashboard-title {
+      font-family: 'Cinzel', serif;
+      font-size: 15px;
+      color: var(--accent-green);
+      margin-bottom: 24px;
+      letter-spacing: 0.05em;
     }
 
     .control-group {
-      margin-bottom: 28px;
+      margin-bottom: 24px;
     }
 
     .control-header {
       display: flex;
       justify-content: space-between;
-      font-size: 12px;
+      font-size: 11px;
       color: var(--silver);
-      margin-bottom: 12px;
-      letter-spacing: 0.05em;
+      margin-bottom: 10px;
     }
 
     input[type="range"] {
       width: 100%;
       -webkit-appearance: none;
-      background: rgba(255, 170, 0, 0.1);
-      height: 6px;
-      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.05);
+      height: 4px;
       outline: none;
     }
 
     input[type="range"]::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 16px;
-      height: 16px;
-      background: linear-gradient(135deg, var(--vibrant-gold) 0%, var(--deep-copper) 100%);
+      width: 14px;
+      height: 14px;
+      background: var(--gold);
       cursor: pointer;
       border-radius: 50%;
-      box-shadow: 0 0 10px var(--neon-amber);
-      transition: transform 0.1s;
-    }
-
-    input[type="range"]::-webkit-slider-thumb:active {
-      transform: scale(1.25);
     }
 
     .results-row {
       display: flex;
-      gap: 50px;
-      border-top: 1px solid rgba(255, 170, 0, 0.15);
-      padding-top: 28px;
-      margin-top: 28px;
+      gap: 40px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 24px;
+      margin-top: 24px;
     }
 
     .result-metric {
@@ -300,24 +251,18 @@
     }
 
     .metric-val {
-      font-size: 28px;
-      color: var(--vibrant-gold);
+      font-size: 24px;
+      color: var(--pale-gold);
       font-weight: bold;
       display: block;
-      margin-bottom: 6px;
-      text-shadow: 0 0 15px rgba(255, 204, 51, 0.2);
-    }
-
-    .panel-title.sustain ~ .results-row .metric-val {
-      color: var(--biolume-green);
-      text-shadow: 0 0 15px rgba(57, 255, 20, 0.2);
+      margin-bottom: 4px;
     }
 
     .metric-lbl {
-      font-size: 11px;
+      font-size: 10px;
       color: var(--silver);
       text-transform: uppercase;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.05em;
     }
   </style>
 </head>
@@ -325,43 +270,43 @@
 
   <nav>
     <a href="#" class="nav-brand">
-      <img src="./brand-logo.jpg" alt="Bioluminescent Cyber-Guardian" class="brand-logo-img">
+      <img src="./brand-logo.jpg" alt="Cyber Guardian" class="brand-logo-img">
       <span class="nav-title">Bruno Protocol</span>
     </a>
     <a href="https://ko-fi.com" target="_blank" class="support-btn">☕ Support Open Source</a>
   </nav>
 
   <div class="container">
-    <section class="biolume-panel">
-      <div class="panel-title">⚡ Neural Array Data Compiler</div>
+    <section class="compiler-section">
+      <div class="compiler-title">⚡ Postman Collection to Plain-Text .bru Converter</div>
       <div class="grid">
-        <div class="panel-node">
-          <label class="node-label">Source Postman Payload Array (JSON)</label>
-          <textarea id="input-json" placeholder="Paste your exported Postman collection structure directly here..."></textarea>
+        <div class="panel">
+          <label class="panel-label">Source Postman JSON (v2.1)</label>
+          <textarea id="input-json" placeholder="Paste your exported Postman collection JSON data here..."></textarea>
         </div>
-        <div class="panel-node">
-          <label class="node-label">Compiled Native Plain-Text (.bru)</label>
-          <textarea id="output-bru" placeholder="The localized execution matrix will compile here..." readonly></textarea>
+        <div class="panel">
+          <label class="panel-label">Compiled Plain-Text .bru Output</label>
+          <textarea id="output-bru" placeholder="Your deterministic .bru file conversion will print here..." readonly></textarea>
         </div>
       </div>
-      <button class="pulse-btn" id="compile-trigger">⚡ Execute Matrix Conversion Loop ⚡</button>
+      <button class="compile-btn" id="compile-trigger">◆ Compile Array to Bru Formatting ◆</button>
     </section>
 
-    <section class="biolume-panel">
-      <div class="panel-title sustain">🌱 Eco-Compute Energy Management System</div>
+    <section class="dashboard-section">
+      <div class="dashboard-title">🌱 ISO/IEC 21031:2024 Software Carbon Intensity Dashboard</div>
       
       <div class="control-group">
         <div class="control-header">
-          <span>Active Operations Engine Size</span>
-          <span id="team-val" style="color: var(--vibrant-gold); font-weight: bold;">15 devs</span>
+          <span>Engineering Team Size</span>
+          <span id="team-val">15 devs</span>
         </div>
         <input type="range" id="team-slider" min="1" max="200" value="15">
       </div>
 
       <div class="control-group">
         <div class="control-header">
-          <span>Monthly Micro-Bus Queries Per Node</span>
-          <span id="req-val" style="color: var(--vibrant-gold); font-weight: bold;">51,000 reqs</span>
+          <span>Monthly API Requests per Dev</span>
+          <span id="req-val">51,000 reqs</span>
         </div>
         <input type="range" id="req-slider" min="1000" max="200000" step="1000" value="51000">
       </div>
@@ -369,11 +314,11 @@
       <div class="results-row">
         <div class="result-metric">
           <span class="metric-val" id="carbon-val">94.30 kg CO₂e</span>
-          <span class="metric-lbl">Prevented Carbon Overhead Offset</span>
+          <span class="metric-lbl">Estimated Annual Saved Overhead</span>
         </div>
         <div class="result-metric">
-          <span class="metric-val" id="tree-val" style="color: var(--biolume-green);">4 Mature Trees</span>
-          <span class="metric-lbl">Environmental Absorption Equivalent</span>
+          <span class="metric-val" id="tree-val">4 Mature Trees</span>
+          <span class="metric-lbl">Environmental Equivalent Offset</span>
         </div>
       </div>
     </section>
@@ -434,8 +379,5 @@
     teamSlider.addEventListener('input', calculateSustainabilityOffsets);
     reqSlider.addEventListener('input', calculateSustainabilityOffsets);
   </script>
-<footer style="text-align: center; padding: 20px; font-size: 10px; color: rgba(255,170,0,0.4); letter-spacing: 0.1em; border-top: 1px solid rgba(255,170,0,0.05); margin-top: 40px;">
-  &copy; 2026 BRUNO PROTOCOL. ALL RIGHTS RESERVED. <br>
-  THE CYBERNETIC GOLDEN GUARDIAN MASCOT AND ASSOCIATED BRANDING ASSETS ARE PROPERTY OF THE PROTOCOL ECOSYSTEM AND PROTECTED UNDER REGISTERED COPYRIGHT & TRADEMARK.
-</footer></body>
+</body>
 </html>
