@@ -10,8 +10,12 @@ function parsePostmanItem(item, sequence = 1) {
     output += `meta {\n  name: "${item.name || 'API Request'}"\n  type: "http"\n  seq: ${sequence}\n}\n\n`;
     output += `${method} {\n  url: "${rawUrl}"\n`;
 
+    // Detect empty body — treat same as no body
+    const rawBody = req.body?.raw?.trim() || '';
+    const isEmptyBody = !rawBody || rawBody === '{}' || rawBody === '[]';
+
     let bodyMode = 'none';
-    if (req.body) {
+    if (req.body && !isEmptyBody) {
       if (req.body.mode === 'raw') bodyMode = 'json';
       else if (req.body.mode === 'formdata') bodyMode = 'multipart-form';
       else if (req.body.mode === 'urlencoded') bodyMode = 'form-url-encoded';
@@ -31,19 +35,19 @@ function parsePostmanItem(item, sequence = 1) {
       if (tokenObj) output += `auth:bearer {\n  token: ${tokenObj.value}\n}\n\n`;
     }
 
-    // ── JSON body — strip outer { } since body:json { } is already the wrapper
-    if (req.body?.mode === 'raw' && req.body.raw) {
+    // JSON body — skip entirely if empty, strip outer { } otherwise
+    if (req.body?.mode === 'raw' && !isEmptyBody) {
       output += `body:json {\n`;
       try {
-        const parsed = JSON.parse(req.body.raw);
+        const parsed = JSON.parse(rawBody);
         const inner = JSON.stringify(parsed, null, 2)
           .split('\n')
-          .slice(1, -1)           // drop first "{" line and last "}" line
-          .map(l => `  ${l}`)     // indent everything two spaces
+          .slice(1, -1)
+          .map(l => `  ${l}`)
           .join('\n');
         output += inner + '\n';
       } catch (e) {
-        output += `  ${req.body.raw}\n`;
+        output += `  ${rawBody}\n`;
       }
       output += `}\n\n`;
     }
@@ -76,7 +80,7 @@ function parsePostmanItem(item, sequence = 1) {
   return output;
 }
 
-// ── Compile button
+// Compile button
 document.getElementById('compile-trigger').addEventListener('click', function () {
   const inputField = document.getElementById('input-json');
   const outputField = document.getElementById('output-bru');
@@ -95,7 +99,7 @@ document.getElementById('compile-trigger').addEventListener('click', function ()
   }
 });
 
-// ── Copy button
+// Copy button
 document.getElementById('copy-btn').addEventListener('click', function () {
   const outputText = document.getElementById('output-bru');
   if (!outputText.value.trim()) return;
@@ -114,7 +118,7 @@ document.getElementById('copy-btn').addEventListener('click', function () {
   }).catch(err => console.error('Clipboard error:', err));
 });
 
-// ── Sustainability sliders
+// Sustainability sliders
 const teamSlider = document.getElementById('team-slider');
 const reqSlider = document.getElementById('req-slider');
 
@@ -125,7 +129,7 @@ function calculateSustainabilityOffsets() {
   document.getElementById('req-val').textContent = reqCount.toLocaleString() + ' reqs';
   const savedKgs = ((teamSize * reqCount * 12) * 0.0000153).toFixed(2);
   const equivalentTrees = Math.max(1, Math.round(savedKgs / 22));
-  document.getElementById('carbon-val').textContent = savedKgs + ' kg CO₂e';
+  document.getElementById('carbon-val').textContent = savedKgs + ' kg CO\u2082e';
   document.getElementById('tree-val').textContent = equivalentTrees + ' Mature Trees';
 }
 
