@@ -345,6 +345,29 @@
     </section>
 
     <section class="biolume-panel">
+      <div class="panel-title" style="color: var(--neon-amber);">&#8635; Reverse Compiler &mdash; .bru &rarr; Postman</div>
+      <p style="font-size: 12px; color: var(--silver); margin-bottom: 18px; line-height: 1.6;">
+        Paste one or more <code style="background: rgba(255,170,0,0.1); padding: 2px 6px; border-radius: 3px; font-size: 11px;">.bru</code> file contents below. Outputs a valid Postman Collection v2.1 JSON ready to import.
+      </p>
+      <div class="grid">
+        <div class="panel-node">
+          <div class="node-label-row">
+            <label class="node-label">INPUT &mdash; .BRU SOURCE</label>
+          </div>
+          <textarea id="input-bru" placeholder="Paste .bru file content here. Paste multiple files separated by a blank line..."></textarea>
+        </div>
+        <div class="panel-node">
+          <div class="node-label-row">
+            <label class="node-label">OUTPUT &mdash; POSTMAN COLLECTION JSON</label>
+            <button class="mini-copy-btn" id="copy-postman-btn">Copy JSON</button>
+          </div>
+          <textarea id="output-postman" placeholder="Postman Collection v2.1 JSON will appear here..." readonly></textarea>
+        </div>
+      </div>
+      <button class="pulse-btn" id="reverse-compile-trigger" style="border-color: var(--neon-amber); color: var(--neon-amber); margin-top: 18px;">&#8635; Decompile .bru to Postman Collection</button>
+    </section>
+
+    <section class="biolume-panel">
       <div class="panel-title" style="color: var(--biolume-green);">🌱 Eco-Compute Energy Management System</div>
       
       <div class="control-group">
@@ -648,6 +671,369 @@
         setTimeout(() => { btn.textContent = 'Copy .bru'; btn.style.background = 'rgba(255,170,0,0.1)'; btn.style.color = 'var(--vibrant-gold)'; }, 2000);
       });
     });
+
+
+    // ── REVERSE COMPILER: .bru → Postman Collection v2.1
+    function parseBruFile(bruText) {
+      const lines = bruText.split('\n');
+      const request = {
+        meta: {},
+        method: '',
+        url: '',
+        bodyMode: 'none',
+        auth: 'none',
+        headers: [],
+        queryParams: [],
+        body: null,
+        bodyRaw: '',
+        formData: [],
+        urlEncoded: [],
+        bearerToken: '',
+        preScript: '',
+        postScript: ''
+      };
+
+      let i = 0;
+      while (i < lines.length) {
+        const line = lines[i].trim();
+
+        // meta block
+        if (line === 'meta {') {
+          i++;
+          while (i < lines.length && lines[i].trim() !== '}') {
+            const [k, ...rest] = lines[i].trim().split(':');
+            if (k && rest.length) request.meta[k.trim()] = rest.join(':').trim().replace(/^"|"$/g, '');
+            i++;
+          }
+          i++; continue;
+        }
+
+        // method block: get/post/put/patch/delete/head/options {
+        const methodMatch = line.match(/^(get|post|put|patch|delete|head|options)\s*\{$/i);
+        if (methodMatch) {
+          request.method = methodMatch[1].toUpperCase();
+          i++;
+          while (i < lines.length && lines[i].trim() !== '}') {
+            const l = lines[i].trim();
+            if (l.startsWith('url:')) request.url = l.slice(4).trim().replace(/^"|"$/g, '');
+            if (l.startsWith('body:')) request.bodyMode = l.slice(5).trim();
+            if (l.startsWith('auth:')) request.auth = l.slice(5).trim();
+            i++;
+          }
+          i++; continue;
+        }
+
+        // params:query block
+        if (line === 'params:query {') {
+          i++;
+          while (i < lines.length && lines[i].trim() !== '}') {
+            const l = lines[i].trim();
+            if (l && !l.startsWith('//')) {
+              const sepIdx = l.indexOf(':');
+              if (sepIdx !== -1) {
+                const disabled = l.startsWith('~');
+                const clean = disabled ? l.slice(1) : l;
+                const ci = clean.indexOf(':');
+                request.queryParams.push({
+                  key: clean.slice(0, ci).trim(),
+                  value: clean.slice(ci + 1).trim(),
+                  disabled
+                });
+              }
+            }
+            i++;
+          }
+          i++; continue;
+        }
+
+        // headers block
+        if (line === 'headers {') {
+          i++;
+          while (i < lines.length && lines[i].trim() !== '}') {
+            const l = lines[i].trim();
+            if (l && !l.startsWith('//')) {
+              const disabled = l.startsWith('~');
+              const clean = disabled ? l.slice(1) : l;
+              const sepIdx = clean.indexOf(':');
+              if (sepIdx !== -1) {
+                request.headers.push({
+                  key: clean.slice(0, sepIdx).trim(),
+                  value: clean.slice(sepIdx + 1).trim(),
+                  disabled
+                });
+              }
+            }
+            i++;
+          }
+          i++; continue;
+        }
+
+        // auth:bearer block
+        if (line === 'auth:bearer {') {
+          i++;
+          while (i < lines.length && lines[i].trim() !== '}') {
+            const l = lines[i].trim();
+            if (l.startsWith('token:')) request.bearerToken = l.slice(6).trim();
+            i++;
+          }
+          i++; continue;
+        }
+
+        // body:json block
+        if (line === 'body:json {') {
+          const bodyLines = [];
+          i++;
+          let depth = 1;
+          while (i < lines.length) {
+            const bl = lines[i];
+            const trimmed = bl.trim();
+            if (trimmed === '}' && depth === 1) { i++; break; }
+            for (const ch of trimmed) {
+              if (ch === '{' || ch === '[') depth++;
+              else if (ch === '}' || ch === ']') depth--;
+            }
+            bodyLines.push(bl.replace(/^  /, ''));
+            i++;
+          }
+          // Wrap in outer braces to make valid JSON
+          request.bodyRaw = '{\n' + bodyLines.join('\n') + '\n}';
+          continue;
+        }
+
+        // body:multipart-form block
+        if (line === 'body:multipart-form {') {
+          i++;
+          while (i < lines.length && lines[i].trim() !== '}') {
+            const l = lines[i].trim();
+            if (l && !l.startsWith('//')) {
+              const disabled = l.startsWith('~');
+              const clean = disabled ? l.slice(1) : l;
+              const sepIdx = clean.indexOf(':');
+              if (sepIdx !== -1) {
+                const key = clean.slice(0, sepIdx).trim();
+                const val = clean.slice(sepIdx + 1).trim();
+                const isFile = val.startsWith('@file(');
+                request.formData.push({
+                  key,
+                  value: isFile ? val.replace(/@file\(|\)/g, '') : val,
+                  type: isFile ? 'file' : 'text',
+                  src: isFile ? val.replace(/@file\(|\)/g, '') : null,
+                  disabled
+                });
+              }
+            }
+            i++;
+          }
+          i++; continue;
+        }
+
+        // body:form-url-encoded block
+        if (line === 'body:form-url-encoded {') {
+          i++;
+          while (i < lines.length && lines[i].trim() !== '}') {
+            const l = lines[i].trim();
+            if (l && !l.startsWith('//')) {
+              const disabled = l.startsWith('~');
+              const clean = disabled ? l.slice(1) : l;
+              const sepIdx = clean.indexOf(':');
+              if (sepIdx !== -1) {
+                request.urlEncoded.push({
+                  key: clean.slice(0, sepIdx).trim(),
+                  value: clean.slice(sepIdx + 1).trim(),
+                  disabled
+                });
+              }
+            }
+            i++;
+          }
+          i++; continue;
+        }
+
+        // script:pre-request block
+        if (line === 'script:pre-request {') {
+          const scriptLines = [];
+          i++;
+          while (i < lines.length && lines[i].trim() !== '}') {
+            scriptLines.push(lines[i].replace(/^  /, ''));
+            i++;
+          }
+          request.preScript = scriptLines.join('\n');
+          i++; continue;
+        }
+
+        // script:post-response block
+        if (line === 'script:post-response {') {
+          const scriptLines = [];
+          i++;
+          while (i < lines.length && lines[i].trim() !== '}') {
+            scriptLines.push(lines[i].replace(/^  /, ''));
+            i++;
+          }
+          request.postScript = scriptLines.join('\n');
+          i++; continue;
+        }
+
+        i++;
+      }
+
+      return request;
+    }
+
+    function bruRequestToPostman(req) {
+      // Build URL object
+      let rawUrl = req.url;
+
+      // Append query params back to URL if any
+      if (req.queryParams.length > 0) {
+        const qs = req.queryParams
+          .filter(p => !p.disabled)
+          .map(p => `${p.key}=${p.value}`)
+          .join('&');
+        if (qs) rawUrl += (rawUrl.includes('?') ? '&' : '?') + qs;
+      }
+
+      // Parse URL into Postman host/path/query structure
+      let urlObj = { raw: rawUrl };
+      try {
+        // Handle template variables in URL for parsing
+        const cleanUrl = rawUrl.replace(/\{\{[^}]+\}\}/g, 'PLACEHOLDER');
+        const u = new URL(cleanUrl);
+        urlObj = {
+          raw: rawUrl,
+          protocol: u.protocol.replace(':', ''),
+          host: u.hostname.split('.'),
+          path: u.pathname.split('/').filter(Boolean),
+          query: req.queryParams.map(p => ({
+            key: p.key,
+            value: p.value,
+            disabled: p.disabled || undefined
+          }))
+        };
+        if (u.port) urlObj.port = u.port;
+      } catch(e) { /* keep raw only */ }
+
+      // Headers
+      const headers = req.headers.map(h => ({
+        key: h.key,
+        value: h.value,
+        ...(h.disabled ? { disabled: true } : {})
+      }));
+
+      // Auth
+      let auth = null;
+      if (req.auth === 'bearer' || req.bearerToken) {
+        auth = {
+          type: 'bearer',
+          bearer: [{ key: 'token', value: req.bearerToken || '', type: 'string' }]
+        };
+      }
+
+      // Body
+      let body = null;
+      if (req.bodyMode === 'json' && req.bodyRaw) {
+        body = { mode: 'raw', raw: req.bodyRaw, options: { raw: { language: 'json' } } };
+      } else if (req.bodyMode === 'multipart-form' && req.formData.length) {
+        body = {
+          mode: 'formdata',
+          formdata: req.formData.map(f => ({
+            key: f.key,
+            ...(f.type === 'file' ? { type: 'file', src: f.src } : { value: f.value, type: 'text' }),
+            ...(f.disabled ? { disabled: true } : {})
+          }))
+        };
+      } else if (req.bodyMode === 'form-url-encoded' && req.urlEncoded.length) {
+        body = {
+          mode: 'urlencoded',
+          urlencoded: req.urlEncoded.map(f => ({
+            key: f.key,
+            value: f.value,
+            ...(f.disabled ? { disabled: true } : {})
+          }))
+        };
+      }
+
+      // Events (scripts)
+      const events = [];
+      if (req.preScript) {
+        events.push({
+          listen: 'prerequest',
+          script: { type: 'text/javascript', exec: req.preScript.split('\n') }
+        });
+      }
+      if (req.postScript) {
+        events.push({
+          listen: 'test',
+          script: { type: 'text/javascript', exec: req.postScript.split('\n') }
+        });
+      }
+
+      return {
+        name: req.meta.name || 'Unnamed Request',
+        request: {
+          method: req.method || 'GET',
+          header: headers,
+          ...(auth ? { auth } : {}),
+          ...(body ? { body } : {}),
+          url: urlObj
+        },
+        ...(events.length ? { event: events } : {}),
+        response: []
+      };
+    }
+
+    function bruToPostmanCollection(bruText) {
+      // Split on the separator comments or double newlines between meta blocks
+      // Each request starts with "meta {"
+      const chunks = bruText.split(/(?=\nmeta \{)/g).filter(c => c.trim());
+
+      const items = [];
+      chunks.forEach(chunk => {
+        if (!chunk.trim() || !chunk.includes('meta {')) return;
+        try {
+          const req = parseBruFile(chunk);
+          if (req.method) items.push(bruRequestToPostman(req));
+        } catch(e) {
+          console.warn('Skipped chunk:', e.message);
+        }
+      });
+
+      return {
+        info: {
+          name: 'Imported from .bru',
+          schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
+          _postman_id: crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+            const r = Math.random() * 16 | 0;
+            return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+          })
+        },
+        item: items,
+        variable: []
+      };
+    }
+
+    document.getElementById('reverse-compile-trigger').addEventListener('click', function() {
+      const inputField = document.getElementById('input-bru');
+      const outputField = document.getElementById('output-postman');
+      if (!inputField.value.trim()) return;
+      try {
+        const collection = bruToPostmanCollection(inputField.value);
+        outputField.value = JSON.stringify(collection, null, 2);
+      } catch(e) {
+        outputField.value = '// Reverse Compilation Error: ' + e.message;
+      }
+    });
+
+    document.getElementById('copy-postman-btn').addEventListener('click', function() {
+      const t = document.getElementById('output-postman');
+      if (!t.value.trim()) return;
+      navigator.clipboard.writeText(t.value).then(function() {
+        const btn = document.getElementById('copy-postman-btn');
+        btn.textContent = 'Copied!';
+        btn.style.background = 'var(--biolume-green)'; btn.style.color = '#050406';
+        setTimeout(function() { btn.textContent = 'Copy JSON'; btn.style.background = 'rgba(255,170,0,0.1)'; btn.style.color = 'var(--vibrant-gold)'; }, 2000);
+      });
+    });
+
 
     const teamSlider = document.getElementById('team-slider');
     const reqSlider = document.getElementById('req-slider');
