@@ -385,8 +385,11 @@
         const rawUrl = req.url?.raw || req.url || '';
         output += `meta {\n  name: "${item.name || 'API Request'}"\n  type: "http"\n  seq: ${sequence}\n}\n\n`;
         output += `${method} {\n  url: "${rawUrl}"\n`;
+        // Skip body:json entirely if body is empty or {}
+        const rawBody = req.body?.raw?.trim() || '';
+        const isEmptyBody = !rawBody || rawBody === '{}' || rawBody === '[]';
         let bodyMode = 'none';
-        if (req.body) {
+        if (req.body && !isEmptyBody) {
           if (req.body.mode === 'raw') bodyMode = 'json';
           else if (req.body.mode === 'formdata') bodyMode = 'multipart-form';
           else if (req.body.mode === 'urlencoded') bodyMode = 'form-url-encoded';
@@ -403,18 +406,17 @@
           const tokenObj = req.auth.bearer.find(b => b.key === 'token');
           if (tokenObj) output += `auth:bearer {\n  token: ${tokenObj.value}\n}\n\n`;
         }
-        if (req.body?.mode === 'raw' && req.body.raw) {
+        if (req.body?.mode === 'raw' && !isEmptyBody) {
           output += `body:json {\n`;
           try {
-            const parsed = JSON.parse(req.body.raw);
-            // Strip the outer { } — Bruno's body:json block is already the wrapper
+            const parsed = JSON.parse(rawBody);
             const inner = JSON.stringify(parsed, null, 2)
               .split('\n')
-              .slice(1, -1)  // remove first "{" and last "}" lines
+              .slice(1, -1)
               .map(l => `  ${l}`)
               .join('\n');
             output += inner + '\n';
-          } catch (e) { output += `  ${req.body.raw}\n`; }
+          } catch (e) { output += `  ${rawBody}\n`; }
           output += `}\n\n`;
         }
         if (req.body?.mode === 'formdata' && req.body.formdata) {
