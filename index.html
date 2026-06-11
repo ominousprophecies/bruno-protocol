@@ -75,20 +75,20 @@
     }
 
     .cyber-guardian-logo:hover {
-      transform: scale(1.08) rotate(-1deg);
-      filter: drop-shadow(0 0 12px rgba(232, 213, 163, 0.5));
+      transform: scale(1.06);
+      filter: drop-shadow(0 0 14px rgba(232, 213, 163, 0.6));
     }
 
-    .cyber-guardian-logo:hover .initials-mesh {
+    .cyber-guardian-logo:hover .initials-backbone {
       stroke: #ffffff;
-      opacity: 1;
     }
 
-    .cyber-guardian-logo:hover .hardware-nodes {
-      fill: #ffffff;
+    .cyber-guardian-logo:hover .wireframe-contour {
+      stroke: var(--pale-gold);
+      opacity: 0.6;
     }
 
-    .initials-mesh, .hardware-nodes, .pcb-traces {
+    .initials-backbone, .wireframe-contour, .hardware-nodes, .pcb-traces {
       transition: stroke 0.3s ease, fill 0.3s ease, opacity 0.3s ease;
     }
 
@@ -267,166 +267,3 @@
 
     .metric-lbl {
       font-size: 10px;
-      color: var(--silver);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-  </style>
-</head>
-<body>
-
-  <nav>
-    <a href="#" class="nav-brand">
-      <svg class="cyber-guardian-logo" width="52" height="52" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <g stroke="#c9a84c" stroke-linejoin="round">
-          <path d="M22 90 L34 46 Q54 20 86 32 Q108 42 114 74 L94 98 L64 114 Z" stroke-width="1.2" opacity="0.3" stroke-dasharray="3,2" />
-          
-          <path class="initials-mesh" d="M68 25 L68 112" stroke-width="2.5" opacity="0.9" />
-          <path class="initials-mesh" d="M68 25 Q102 26 108 50 Q112 68 94 72 L68 72" stroke-width="2.5" stroke-linecap="round" opacity="0.9" fill="url(#p-glow)" fill-opacity="0.03" />
-
-          <path class="initials-mesh" d="M64 36 Q38 36 40 60 Q42 76 64 76" stroke-width="2.2" opacity="0.85" />
-          <path class="initials-mesh" d="M64 76 Q34 76 36 96 Q38 108 64 108" stroke-width="2.2" opacity="0.85" fill="url(#b-glow)" fill-opacity="0.03" />
-          
-          <path d="M40 60 Q68 62 94 50" stroke-width="0.75" stroke-dasharray="2,1" opacity="0.4" />
-          <path d="M36 84 Q66 80 102 78" stroke-width="0.75" stroke-dasharray="2,2" opacity="0.4" />
-          <path d="M86 32 C88 48 88 68 68 72" stroke-width="0.8" opacity="0.5" />
-          <path d="M50 44 C56 60 60 80 64 108" stroke-width="0.5" opacity="0.3" />
-        </g>
-
-        <g class="pcb-traces" stroke="#e8d5a3" stroke-width="1.75" stroke-linecap="round" opacity="0.9">
-          <path d="M98 64 L84 60 L68 68" />
-          <path d="M42 50 L52 64 L68 64" />
-          <path d="M46 96 L60 102 L68 92" />
-        </g>
-
-        <g class="hardware-nodes" fill="#e8d5a3">
-          <circle cx="108" cy="50" r="2.2" />
-          <circle cx="94" cy="72" r="2.2" />
-          <circle cx="40" cy="60" r="1.8" />
-          <circle cx="36" cy="96" r="1.8" />
-          <circle cx="68" cy="72" r="2.5" />
-          <circle cx="68" cy="25" r="2" />
-        </g>
-
-        <circle cx="84" cy="48" r="4.5" stroke="#e8d5a3" stroke-width="1" />
-        <circle cx="84" cy="48" r="1.5" fill="#e8d5a3" />
-
-        <defs>
-          <linearGradient id="p-glow" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stop-color="#c9a84c" stop-opacity="0.2"/><stop offset="100%" stop-color="#080608" stop-opacity="0"/>
-          </linearGradient>
-          <linearGradient id="b-glow" x1="1" y1="0" x2="0" y2="0">
-            <stop offset="0%" stop-color="#e8d5a3" stop-opacity="0.15"/><stop offset="100%" stop-color="#080608" stop-opacity="0"/>
-          </linearGradient>
-        </defs>
-      </svg>
-      <span class="nav-title">Bruno Protocol</span>
-    </a>
-    <a href="https://ko-fi.com" target="_blank" class="support-btn">☕ Support Open Source</a>
-  </nav>
-
-  <div class="container">
-    <section class="compiler-section">
-      <div class="compiler-title">⚡ Postman Collection to Plain-Text .bru Converter</div>
-      <div class="grid">
-        <div class="panel">
-          <label class="panel-label">Source Postman JSON (v2.1)</label>
-          <textarea id="input-json" placeholder="Paste your exported Postman collection JSON data here..."></textarea>
-        </div>
-        <div class="panel">
-          <label class="panel-label">Compiled Plain-Text .bru Output</label>
-          <textarea id="output-bru" placeholder="Your deterministic .bru file conversion will print here..." readonly></textarea>
-        </div>
-      </div>
-      <button class="compile-btn" id="compile-trigger">◆ Compile Array to Bru Formatting ◆</button>
-    </section>
-
-    <section class="dashboard-section">
-      <div class="dashboard-title">🌱 ISO/IEC 21031:2024 Software Carbon Intensity Dashboard</div>
-      
-      <div class="control-group">
-        <div class="control-header">
-          <span>Engineering Team Size</span>
-          <span id="team-val">15 devs</span>
-        </div>
-        <input type="range" id="team-slider" min="1" max="200" value="15">
-      </div>
-
-      <div class="control-group">
-        <div class="control-header">
-          <span>Monthly API Requests per Dev</span>
-          <span id="req-val">51,000 reqs</span>
-        </div>
-        <input type="range" id="req-slider" min="1000" max="200000" step="1000" value="51000">
-      </div>
-
-      <div class="results-row">
-        <div class="result-metric">
-          <span class="metric-val" id="carbon-val">94.30 kg CO₂e</span>
-          <span class="metric-lbl">Estimated Annual Saved Overhead</span>
-        </div>
-        <div class="result-metric">
-          <span class="metric-val" id="tree-val">4 Mature Trees</span>
-          <span class="metric-lbl">Environmental Equivalent Offset</span>
-        </div>
-      </div>
-    </section>
-  </div>
-
-  <script>
-    // ── VERCEL PRIVACY-FIRST TELEMETRY FRAMEWORK ─────────────────────
-    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-    const vaScript = document.createElement('script');
-    vaScript.src = '/_vercel/insights/script.js';
-    vaScript.defer = true;
-    document.head.appendChild(vaScript);
-
-    // ── DETERMINISTIC COMPILER LOGIC LAYER ──────────────────────────
-    document.getElementById('compile-trigger').addEventListener('click', function() {
-      const inputField = document.getElementById('input-json');
-      const outputField = document.getElementById('output-bru');
-      
-      if (!inputField.value.trim()) return;
-
-      try {
-        const postman = JSON.parse(inputField.value);
-        let bruOutput = '';
-
-        if (postman.item && Array.isArray(postman.item)) {
-          postman.item.forEach(item => {
-            if (item.request) {
-              bruOutput += `meta {\n  name: "${item.name || 'API Request'}"\n  type: "http"\n  seq: 1\n}\n\n`;
-              bruOutput += `${(item.request.method || 'GET').toLowerCase()} {\n  url: "${item.request.url?.raw || item.request.url || ''}"\n  body: "none"\n  auth: "none"\n}\n\n`;
-            }
-          });
-        }
-
-        outputField.value = bruOutput || '# No explicitly structured request paths detected in object array.';
-      } catch (e) {
-        outputField.value = `// Compilation Matrix Error: ${e.message}\n// Ensure payload is an uncorrupted, stringified JSON file schema.`;
-      }
-    });
-
-    // ── INTERACTIVE SUSTAINABILITY INTEL LOGIC ────────────────────────
-    const teamSlider = document.getElementById('team-slider');
-    const reqSlider = document.getElementById('req-slider');
-    
-    function calculateSustainabilityOffsets() {
-      const teamSize = parseInt(teamSlider.value);
-      const reqCount = parseInt(reqSlider.value);
-      
-      document.getElementById('team-val').textContent = `${teamSize} devs`;
-      document.getElementById('req-val').textContent = `${reqCount.toLocaleString()} reqs`;
-      
-      const savedKgs = ((teamSize * reqCount * 12) * 0.0000153).toFixed(2);
-      const equivalentTrees = Math.max(1, Math.round(savedKgs / 22));
-
-      document.getElementById('carbon-val').textContent = `${savedKgs} kg CO₂e`;
-      document.getElementById('tree-val').textContent = `${equivalentTrees} Mature Trees`;
-    }
-
-    teamSlider.addEventListener('input', calculateSustainabilityOffsets);
-    reqSlider.addEventListener('input', calculateSustainabilityOffsets);
-  </script>
-</body>
-</html>
