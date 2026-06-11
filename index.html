@@ -406,278 +406,219 @@
       }).catch(err => console.error('Clipboard error:', err));
     });
 
-    // ── Extract query params from URL string
-    function extractQueryParams(rawUrl) {
-      try {
-        const qIdx = rawUrl.indexOf('?');
-        if (qIdx === -1) return { baseUrl: rawUrl, params: [] };
-        const baseUrl = rawUrl.slice(0, qIdx);
-        const queryStr = rawUrl.slice(qIdx + 1);
-        const params = queryStr.split('&').map(function(p) {
-          const parts = p.split('=');
-          const k = decodeURIComponent(parts[0] || '');
-          const v = decodeURIComponent(parts.slice(1).join('=') || '');
-          return { key: k, value: v };
-        }).filter(function(p) { return p.key; });
-        return { baseUrl: baseUrl, params: params };
-      } catch(e) { return { baseUrl: rawUrl, params: [] }; }
-    }
-
-    // ── Parse Postman event scripts
-    function parseScripts(events) {
-      var pre = '', post = '';
-      if (!events || !Array.isArray(events)) return { pre: pre, post: post };
-      events.forEach(function(ev) {
-        var script = (ev.script && ev.script.exec) ? ev.script.exec.join('\n') : '';
-        if (!script.trim()) return;
-        if (ev.listen === 'prerequest') pre = script;
-        if (ev.listen === 'test') post = script;
-      });
-      return { pre: pre, post: post };
-    }
-
-    function parsePostmanItem(item, sequence) {
-      if (sequence === undefined) sequence = 1;
-      var output = '';
+    function parsePostmanItem(item, sequence = 1) {
+      let output = '';
       if (!item) return output;
       if (item.request) {
-        var req = item.request;
-        var method = (req.method || 'GET').toLowerCase();
-        var rawUrlFull = (req.url && req.url.raw) ? req.url.raw : (typeof req.url === 'string' ? req.url : '');
-        var qp = extractQueryParams(rawUrlFull);
-        var baseUrl = qp.baseUrl;
-        var params = qp.params;
-
-        output += 'meta {\n';
-        output += '  name: "' + (item.name || 'API Request') + '"\n';
-        output += '  type: "http"\n';
-        output += '  seq: ' + sequence + '\n';
-        output += '}\n\n';
-
-        // body mode
-        var rawBody = (req.body && req.body.raw) ? req.body.raw.trim() : '';
-        var isEmptyRaw = !rawBody || rawBody === '{}' || rawBody === '[]';
-        var bodyMode = 'none';
+        const req = item.request;
+        const method = (req.method || 'GET').toLowerCase();
+        const rawUrl = req.url?.raw || req.url || '';
+        output += `meta {\n  name: "${item.name || 'API Request'}"\n  type: "http"\n  seq: ${sequence}\n}\n\n`;
+        output += `${method} {\n  url: "${rawUrl}"\n`;
+        // Skip body:json entirely if raw body is empty or {}
+        const rawBody = req.body?.raw?.trim() || '';
+        const isEmptyRaw = !rawBody || rawBody === '{}' || rawBody === '[]';
+        let bodyMode = 'none';
         if (req.body) {
           if (req.body.mode === 'raw' && !isEmptyRaw) bodyMode = 'json';
           else if (req.body.mode === 'formdata') bodyMode = 'multipart-form';
           else if (req.body.mode === 'urlencoded') bodyMode = 'form-url-encoded';
         }
-        var authType = (req.auth && req.auth.type) ? req.auth.type : 'none';
-
-        output += method + ' {\n';
-        output += '  url: "' + baseUrl + '"\n';
-        output += '  body: ' + bodyMode + '\n';
-        output += '  auth: ' + (authType === 'bearer' ? 'bearer' : 'none') + '\n';
-        output += '}\n\n';
-
-        // query params block
-        if (params.length > 0) {
-          output += 'params:query {\n';
-          params.forEach(function(p) {
-            output += '  ' + p.key + ': ' + p.value + '\n';
-          });
-          output += '}\n\n';
-        }
-
-        // headers — disabled get ~ prefix
-        var headers = req.header || [];
-        if (headers.length > 0) {
-          output += 'headers {\n';
-          headers.forEach(function(h) {
+        output += `  body: ${bodyMode}\n`;
+        output += req.auth?.type === 'bearer' ? `  auth: bearer\n` : `  auth: none\n`;
+        output += `}\n\n`;
+        if (req.header?.length > 0) {
+          output += `headers {\n`;
+          req.header.forEach(h => {
             if (h.disabled) {
-              output += '  ~' + h.key + ': ' + h.value + '\n';
+              output += `  ~${h.key}: ${h.value}\n`;
             } else {
-              output += '  ' + h.key + ': ' + h.value + '\n';
+              output += `  ${h.key}: ${h.value}\n`;
             }
           });
-          output += '}\n\n';
+          output += `}\n\n`;
         }
-
-        // bearer auth block
-        if (authType === 'bearer' && req.auth.bearer) {
-          var tokenObj = req.auth.bearer.filter(function(b) { return b.key === 'token'; })[0];
-          if (tokenObj) {
-            output += 'auth:bearer {\n';
-            output += '  token: ' + tokenObj.value + '\n';
-            output += '}\n\n';
-          }
+        if (req.auth?.type === 'bearer' && req.auth.bearer) {
+          const tokenObj = req.auth.bearer.find(b => b.key === 'token');
+          if (tokenObj) output += `auth:bearer {\n  token: ${tokenObj.value}\n}\n\n`;
         }
-
-        // body blocks
-        if (req.body && req.body.mode === 'raw' && !isEmptyRaw) {
-          output += 'body:json {\n';
+        if (req.body?.mode === 'raw' && !isEmptyRaw) {
+          output += `body:json {\n`;
           try {
-            var parsed = JSON.parse(rawBody);
-            var inner = JSON.stringify(parsed, null, 2).split('\n').slice(1, -1).map(function(l) { return '  ' + l; }).join('\n');
+            const parsed = JSON.parse(rawBody);
+            const inner = JSON.stringify(parsed, null, 2)
+              .split('\n')
+              .slice(1, -1)
+              .map(l => `  ${l}`)
+              .join('\n');
             output += inner + '\n';
-          } catch(e) { output += '  ' + rawBody + '\n'; }
-          output += '}\n\n';
+          } catch (e) { output += `  ${rawBody}\n`; }
+          output += `}\n\n`;
         }
-        if (req.body && req.body.mode === 'formdata' && req.body.formdata) {
-          output += 'body:multipart-form {\n';
-          req.body.formdata.forEach(function(f) {
-            var val = f.type === 'file' ? '@file(' + (f.src || '') + ')' : (f.value || '');
+        if (req.body?.mode === 'formdata' && req.body.formdata) {
+          output += `body:multipart-form {\n`;
+          req.body.formdata.forEach(f => {
+            const val = f.type === 'file' ? `@file(${f.src || ''})` : (f.value || '');
             if (f.disabled) {
-              output += '  ~' + f.key + ': ' + val + '\n';
+              output += `  ~${f.key}: ${val}\n`;
             } else {
-              output += '  ' + f.key + ': ' + val + '\n';
+              output += `  ${f.key}: ${val}\n`;
             }
           });
-          output += '}\n\n';
+          output += `}\n\n`;
         }
-        if (req.body && req.body.mode === 'urlencoded' && req.body.urlencoded) {
-          output += 'body:form-url-encoded {\n';
-          req.body.urlencoded.forEach(function(f) {
+        if (req.body?.mode === 'urlencoded' && req.body.urlencoded) {
+          output += `body:form-url-encoded {\n`;
+          req.body.urlencoded.forEach(f => {
             if (f.disabled) {
-              output += '  ~' + f.key + ': ' + (f.value || '') + '\n';
+              output += `  ~${f.key}: ${f.value || ''}\n`;
             } else {
-              output += '  ' + f.key + ': ' + (f.value || '') + '\n';
+              output += `  ${f.key}: ${f.value || ''}\n`;
             }
           });
-          output += '}\n\n';
+          output += `}\n\n`;
         }
-
-        // pre/post scripts
-        var scripts = parseScripts(item.event);
-        if (scripts.pre) {
-          output += 'script:pre-request {\n';
-          scripts.pre.split('\n').forEach(function(l) { output += '  ' + l + '\n'; });
-          output += '}\n\n';
+        // Pre-request and test scripts
+        if (item.event && Array.isArray(item.event)) {
+          item.event.forEach(ev => {
+            const script = ev.script?.exec?.join('\n') || '';
+            if (!script.trim()) return;
+            if (ev.listen === 'prerequest') {
+              output += `script:pre-request {\n`;
+              script.split('\n').forEach(l => { output += `  ${l}\n`; });
+              output += `}\n\n`;
+            }
+            if (ev.listen === 'test') {
+              output += `script:post-response {\n`;
+              script.split('\n').forEach(l => { output += `  ${l}\n`; });
+              output += `}\n\n`;
+            }
+          });
         }
-        if (scripts.post) {
-          output += 'script:post-response {\n';
-          scripts.post.split('\n').forEach(function(l) { output += '  ' + l + '\n'; });
-          output += '}\n\n';
-        }
-
-        output += '// ────────────────────────────────────────────────────────\n\n';
+        output += `// ────────────────────────────────────────────────────────\n\n`;
       }
       if (item.item && Array.isArray(item.item)) {
-        item.item.forEach(function(subItem, idx) { output += parsePostmanItem(subItem, sequence + idx); });
+        item.item.forEach((subItem, idx) => { output += parsePostmanItem(subItem, sequence + idx); });
       }
       return output;
     }
 
-    // ── Extract all {{variables}} from compiled .bru text
+    // Extract all {{variables}} from compiled .bru text
     function extractEnvVars(bruText) {
-      var matches = bruText.match(/\{\{([^}]+)\}\}/g) || [];
-      var unique = [];
-      matches.forEach(function(m) {
-        var key = m.replace(/^\{\{|\}\}$/g, '').trim();
-        if (unique.indexOf(key) === -1) unique.push(key);
+      const matches = bruText.match(/\{\{([^}]+)\}\}/g) || [];
+      const unique = [];
+      matches.forEach(m => {
+        const key = m.replace(/^\{\{|\}\}$/g, '').trim();
+        if (!unique.includes(key)) unique.push(key);
       });
       return unique;
     }
 
     function renderEnvOutputs(bruText, collectionVars) {
-      var templateVars = extractEnvVars(bruText);
-      var seeded = {};
+      const templateVars = extractEnvVars(bruText);
+      const seeded = {};
       if (collectionVars && Array.isArray(collectionVars)) {
-        collectionVars.forEach(function(v) { if (v.key) seeded[v.key] = v.value || ''; });
+        collectionVars.forEach(v => { if (v.key) seeded[v.key] = v.value || ''; });
       }
-      templateVars.forEach(function(v) { if (!(v in seeded)) seeded[v] = ''; });
-      var keys = Object.keys(seeded);
+      templateVars.forEach(v => { if (!(v in seeded)) seeded[v] = ''; });
+      const keys = Object.keys(seeded);
       document.getElementById('output-env').value = keys.length
-        ? keys.map(function(k) { return k + '=' + seeded[k]; }).join('\n')
+        ? keys.map(k => `${k}=${seeded[k]}`).join('\n')
         : '# No variables found';
       document.getElementById('output-brunenv').value = keys.length
-        ? 'vars {\n' + keys.map(function(k) { return '  ' + k + ': ' + seeded[k]; }).join('\n') + '\n}'
+        ? `vars {\n${keys.map(k => `  ${k}: ${seeded[k]}`).join('\n')}\n}`
         : '# No variables found';
     }
 
     function buildFolderStructure(collection) {
-      var tree = {};
+      const tree = {};
       function walk(items, path) {
-        items.forEach(function(item, idx) {
+        items.forEach((item, idx) => {
           if (item.item && Array.isArray(item.item)) {
-            var folderName = (item.name || 'folder').replace(/[^a-z0-9\-_]/gi, '-').toLowerCase();
-            tree[path + '/' + folderName] = null;
-            walk(item.item, path + '/' + folderName);
+            const folderName = (item.name || 'folder').replace(/[^a-z0-9\-_]/gi, '-').toLowerCase();
+            tree[`${path}/${folderName}`] = null;
+            walk(item.item, `${path}/${folderName}`);
           } else if (item.request) {
-            var reqName = (item.name || 'request').replace(/[^a-z0-9\-_]/gi, '-').toLowerCase();
-            tree[path + '/' + reqName + '.bru'] = parsePostmanItem(item, idx + 1);
+            const reqName = (item.name || 'request').replace(/[^a-z0-9\-_]/gi, '-').toLowerCase();
+            tree[`${path}/${reqName}.bru`] = parsePostmanItem(item, idx + 1);
           }
         });
       }
-      var collectionName = (collection.info && collection.info.name) ? collection.info.name : 'collection';
-      var rootName = collectionName.replace(/[^a-z0-9\-_]/gi, '-').toLowerCase();
+      const collectionName = collection.info?.name || 'collection';
+      const rootName = collectionName.replace(/[^a-z0-9\-_]/gi, '-').toLowerCase();
       if (collection.item && Array.isArray(collection.item)) walk(collection.item, rootName);
-
       // bruno.json — required for Bruno to recognise the folder as a collection
-      tree[rootName + '/bruno.json'] = JSON.stringify({
+      tree[`${rootName}/bruno.json`] = JSON.stringify({
         version: '1',
         name: collectionName,
         type: 'collection',
         ignore: []
       }, null, 2);
-
-      return { rootName: rootName, tree: tree };
+      return { rootName, tree };
     }
 
     function renderFolderTree(tree, rootName) {
-      var paths = Object.keys(tree).sort();
+      const paths = Object.keys(tree).sort();
       if (!paths.length) { document.getElementById('folder-tree').textContent = '(empty)'; return; }
-      var out = rootName + '/\n';
-      paths.forEach(function(p) {
-        var rel = p.replace(rootName + '/', '');
-        var depth = (rel.match(/\//g) || []).length;
-        var name = rel.split('/').pop();
-        var indent = '';
-        for (var i = 0; i < depth; i++) indent += '  ';
-        out += indent + (tree[p] === null ? '\uD83D\uDCC1 ' : '\uD83D\uDCC4 ') + name + '\n';
+      let out = `${rootName}/\n`;
+      paths.forEach(p => {
+        const rel = p.replace(`${rootName}/`, '');
+        const depth = (rel.match(/\//g) || []).length;
+        const name = rel.split('/').pop();
+        const indent = '  '.repeat(depth);
+        out += `${indent}${tree[p] === null ? '📁 ' : '📄 '}${name}\n`;
       });
       document.getElementById('folder-tree').textContent = out;
     }
 
     async function downloadZip(tree, rootName) {
-      var btn = document.getElementById('download-zip-btn');
-      btn.textContent = '\u23F3 Building zip...';
+      const btn = document.getElementById('download-zip-btn');
+      btn.textContent = '⏳ Building zip...';
       btn.disabled = true;
       try {
         if (!window.JSZip) {
-          await new Promise(function(res, rej) {
-            var s = document.createElement('script');
+          await new Promise((res, rej) => {
+            const s = document.createElement('script');
             s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
             s.onload = res; s.onerror = rej;
             document.head.appendChild(s);
           });
         }
-        var zip = new JSZip();
-        Object.entries(tree).forEach(function(entry) {
-          if (entry[1] !== null) zip.file(entry[0], entry[1]);
+        const zip = new JSZip();
+        Object.entries(tree).forEach(([path, content]) => {
+          if (content !== null) zip.file(path, content);
         });
-        var blob = await zip.generateAsync({ type: 'blob' });
-        var url = URL.createObjectURL(blob);
-        var a = document.createElement('a');
-        a.href = url; a.download = rootName + '.zip'; a.click();
+        const blob = await zip.generateAsync({ type: 'blob' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = `${rootName}.zip`; a.click();
         URL.revokeObjectURL(url);
-        btn.textContent = '\u2705 Downloaded!';
-        setTimeout(function() { btn.textContent = '\u2B07 Download Folder Structure as .zip'; btn.disabled = false; }, 2500);
+        btn.textContent = '✅ Downloaded!';
+        setTimeout(() => { btn.textContent = '⬇ Download Folder Structure as .zip'; btn.disabled = false; }, 2500);
       } catch(e) {
-        btn.textContent = '\u26A0 Error: ' + e.message;
+        btn.textContent = `⚠ Error: ${e.message}`;
         btn.disabled = false;
       }
     }
 
     document.getElementById('compile-trigger').addEventListener('click', function() {
-      var inputField = document.getElementById('input-json');
-      var outputField = document.getElementById('output-bru');
+      const inputField = document.getElementById('input-json');
+      const outputField = document.getElementById('output-bru');
       if (!inputField.value.trim()) return;
       try {
-        var postman = JSON.parse(inputField.value);
-        var compiledOutput = '';
+        const postman = JSON.parse(inputField.value);
+        let compiledOutput = '';
         if (postman.item && Array.isArray(postman.item)) {
-          postman.item.forEach(function(item, idx) { compiledOutput += parsePostmanItem(item, idx + 1); });
+          postman.item.forEach((item, idx) => { compiledOutput += parsePostmanItem(item, idx + 1); });
         }
         outputField.value = compiledOutput || '# No executable request arrays located within this collection tree.';
         renderEnvOutputs(compiledOutput, postman.variable);
-        var result = buildFolderStructure(postman);
-        renderFolderTree(result.tree, result.rootName);
-        window._lastTree = result.tree;
-        window._lastRootName = result.rootName;
+        const { rootName, tree } = buildFolderStructure(postman);
+        renderFolderTree(tree, rootName);
+        window._lastTree = tree;
+        window._lastRootName = rootName;
       } catch(e) {
-        outputField.value = '// Compilation AST Parse Error: ' + e.message + '\n// Validate structural format correctness.';
+        outputField.value = `// Compilation AST Parse Error: ${e.message}\n// Validate structural format correctness.`;
       }
     });
 
@@ -687,24 +628,24 @@
     });
 
     document.getElementById('copy-env-btn').addEventListener('click', function() {
-      var t = document.getElementById('output-env');
+      const t = document.getElementById('output-env');
       if (!t.value.trim()) return;
-      navigator.clipboard.writeText(t.value).then(function() {
-        var btn = document.getElementById('copy-env-btn');
+      navigator.clipboard.writeText(t.value).then(() => {
+        const btn = document.getElementById('copy-env-btn');
         btn.textContent = 'Copied!';
         btn.style.background = 'var(--biolume-green)'; btn.style.color = '#050406';
-        setTimeout(function() { btn.textContent = 'Copy .env'; btn.style.background = 'rgba(255,170,0,0.1)'; btn.style.color = 'var(--vibrant-gold)'; }, 2000);
+        setTimeout(() => { btn.textContent = 'Copy .env'; btn.style.background = 'rgba(255,170,0,0.1)'; btn.style.color = 'var(--vibrant-gold)'; }, 2000);
       });
     });
 
     document.getElementById('copy-brunenv-btn').addEventListener('click', function() {
-      var t = document.getElementById('output-brunenv');
+      const t = document.getElementById('output-brunenv');
       if (!t.value.trim()) return;
-      navigator.clipboard.writeText(t.value).then(function() {
-        var btn = document.getElementById('copy-brunenv-btn');
+      navigator.clipboard.writeText(t.value).then(() => {
+        const btn = document.getElementById('copy-brunenv-btn');
         btn.textContent = 'Copied!';
         btn.style.background = 'var(--biolume-green)'; btn.style.color = '#050406';
-        setTimeout(function() { btn.textContent = 'Copy .bru'; btn.style.background = 'rgba(255,170,0,0.1)'; btn.style.color = 'var(--vibrant-gold)'; }, 2000);
+        setTimeout(() => { btn.textContent = 'Copy .bru'; btn.style.background = 'rgba(255,170,0,0.1)'; btn.style.color = 'var(--vibrant-gold)'; }, 2000);
       });
     });
 
@@ -725,7 +666,7 @@
 
     teamSlider.addEventListener('input', calculateSustainabilityOffsets);
     reqSlider.addEventListener('input', calculateSustainabilityOffsets);
-
   </script>
+
 </body>
 </html>
