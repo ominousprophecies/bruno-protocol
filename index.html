@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bruno Protocol — Postman to .bru Compiler</title>
+  
+  <!-- Synchronize browser tab favicon with your high-fidelity brand asset -->
+  <link rel="icon" type="image/jpeg" href="brand-logo.jpg">
+  <link rel="shortcut icon" type="image/jpeg" href="brand-logo.jpg">
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -67,29 +72,21 @@
       text-transform: uppercase;
     }
 
-    .cyber-guardian-logo {
-      vertical-align: middle;
+    .brand-logo-img {
+      width: 44px;
+      height: 44px;
+      object-fit: cover;
+      border-radius: 4px;
       margin-right: 14px;
+      border: 1px solid rgba(201, 168, 76, 0.25);
       filter: drop-shadow(0 0 6px rgba(201, 168, 76, 0.2));
-      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.4s ease;
     }
 
-    .cyber-guardian-logo:hover {
-      transform: scale(1.06);
-      filter: drop-shadow(0 0 14px rgba(232, 213, 163, 0.6));
-    }
-
-    .cyber-guardian-logo:hover .initials-backbone {
-      stroke: #ffffff;
-    }
-
-    .cyber-guardian-logo:hover .wireframe-contour {
-      stroke: var(--pale-gold);
-      opacity: 0.6;
-    }
-
-    .initials-backbone, .wireframe-contour, .hardware-nodes, .pcb-traces {
-      transition: stroke 0.3s ease, fill 0.3s ease, opacity 0.3s ease;
+    .nav-brand:hover .brand-logo-img {
+      transform: scale(1.05);
+      border-color: var(--gold);
+      filter: drop-shadow(0 0 12px rgba(232, 213, 163, 0.4));
     }
 
     .support-btn {
@@ -133,9 +130,6 @@
       color: var(--gold);
       margin-bottom: 20px;
       letter-spacing: 0.05em;
-      display: flex;
-      align-items: center;
-      gap: 10px;
     }
 
     .grid {
@@ -277,44 +271,7 @@
 
   <nav>
     <a href="#" class="nav-brand">
-      <svg class="cyber-guardian-logo" width="56" height="56" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M15 85 L28 42 Q42 16 76 22 C92 26 104 32 108 44 Q114 48 116 56 L114 66 L94 72 L86 98 L56 115 Z" stroke="#c9a84c" stroke-width="1" opacity="0.15" stroke-dasharray="2,2" />
-
-        <path class="initials-backbone" d="M66 22 L66 74" stroke="#c9a84c" stroke-width="3" stroke-linecap="round" />
-        <path class="initials-backbone" d="M66 22 C88 22 104 28 108 42 C112 56 114 62 114 66 L88 70 L66 70" stroke="#c9a84c" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" />
-
-        <path class="initials-backbone" d="M66 32 C42 26 28 44 32 64 C36 80 50 74 66 74" stroke="#c9a84c" stroke-width="2.5" stroke-linejoin="round" />
-        <path class="initials-backbone" d="M66 74 C36 74 34 94 44 104 C54 114 62 114 66 114" stroke="#c9a84c" stroke-width="2.5" stroke-linecap="round" />
-
-        <g stroke="#c9a84c" stroke-width="0.6" opacity="0.35">
-          <path class="wireframe-contour" d="M66 70 Q90 70 114 66" />
-          <path class="wireframe-contour" d="M66 58 Q88 58 110 54" />
-          <path class="wireframe-contour" d="M66 44 Q84 42 104 42" />
-          <path class="wireframe-contour" d="M32 64 Q50 64 66 54" />
-          <path class="wireframe-contour" d="M36 88 Q52 90 66 84" />
-          <path class="wireframe-contour" d="M44 104 L34 116" />
-          <path class="wireframe-contour" d="M56 110 L48 122" />
-          <path class="wireframe-contour" d="M66 114 L62 126" />
-        </g>
-
-        <g class="pcb-traces" stroke="#e8d5a3" stroke-width="1.5" stroke-linecap="round" opacity="0.85">
-          <path d="M102 60 L88 58 L76 64" />
-          <path d="M78 28 L84 36 L80 44" />
-          <path d="M48 84 L56 94 L66 94" />
-        </g>
-
-        <g class="hardware-nodes" fill="#e8d5a3">
-          <circle cx="114" cy="66" r="2.2" />
-          <circle cx="108" cy="42" r="1.8" />
-          <circle cx="32" cy="64" r="1.8" />
-          <circle cx="44" cy="104" r="1.8" />
-          <circle cx="66" cy="74" r="2.5" />
-          <circle cx="76" cy="64" r="1.5" />
-        </g>
-
-        <circle cx="84" cy="42" r="4.5" stroke="#e8d5a3" stroke-width="1.2" />
-        <circle cx="84" cy="42" r="1.5" fill="#e8d5a3" />
-      </svg>
+      <img src="brand-logo.jpg" alt="Cyber Guardian" class="brand-logo-img">
       <span class="nav-title">Bruno Protocol</span>
     </a>
     <a href="https://ko-fi.com" target="_blank" class="support-btn">☕ Support Open Source</a>
