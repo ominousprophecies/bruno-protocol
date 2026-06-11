@@ -406,7 +406,14 @@
         if (req.body?.mode === 'raw' && req.body.raw) {
           output += `body:json {\n`;
           try {
-            output += JSON.stringify(JSON.parse(req.body.raw), null, 2).split('\n').map(l => `  ${l}`).join('\n') + '\n';
+            const parsed = JSON.parse(req.body.raw);
+            // Strip the outer { } — Bruno's body:json block is already the wrapper
+            const inner = JSON.stringify(parsed, null, 2)
+              .split('\n')
+              .slice(1, -1)  // remove first "{" and last "}" lines
+              .map(l => `  ${l}`)
+              .join('\n');
+            output += inner + '\n';
           } catch (e) { output += `  ${req.body.raw}\n`; }
           output += `}\n\n`;
         }
