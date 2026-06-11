@@ -314,6 +314,36 @@
       <button class="pulse-btn" id="compile-trigger">⚡ Execute Matrix Conversion Loop ⚡</button>
     </section>
 
+
+    <section class="biolume-panel">
+      <div class="panel-title" style="color: var(--vibrant-gold);">🌿 Environment Variable Extractor</div>
+      <div class="grid">
+        <div class="panel-node">
+          <div class="node-label-row">
+            <label class="node-label">Extracted Variables (.env)</label>
+            <button class="mini-copy-btn" id="copy-env-btn">Copy .env</button>
+          </div>
+          <textarea id="output-env" placeholder="All {{variables}} found in the compiled output will appear here..." readonly></textarea>
+        </div>
+        <div class="panel-node">
+          <div class="node-label-row">
+            <label class="node-label">Bruno Environment File (.bru)</label>
+            <button class="mini-copy-btn" id="copy-brunenv-btn">Copy .bru</button>
+          </div>
+          <textarea id="output-brunenv" placeholder="Bruno-format environment block will appear here..." readonly></textarea>
+        </div>
+      </div>
+    </section>
+
+    <section class="biolume-panel">
+      <div class="panel-title" style="color: var(--neon-amber);">📁 Folder-Aware Export</div>
+      <p style="font-size: 12px; color: var(--silver); margin-bottom: 18px; line-height: 1.6;">
+        Downloads a <code style="background: rgba(255,170,0,0.1); padding: 2px 6px; border-radius: 3px; font-size: 11px;">.zip</code> matching Bruno&apos;s actual directory structure — one <code style="background: rgba(255,170,0,0.1); padding: 2px 6px; border-radius: 3px; font-size: 11px;">.bru</code> file per request, nested inside folders. Drop the zip into Bruno and it&apos;s ready to run.
+      </p>
+      <div id="folder-tree" style="font-family: 'Space Mono', monospace; font-size: 11px; color: var(--silver); background: rgba(5,4,6,0.85); border: 1px solid rgba(255,170,0,0.15); border-radius: 4px; padding: 16px; min-height: 80px; margin-bottom: 18px; white-space: pre; overflow-x: auto;"></div>
+      <button class="pulse-btn" id="download-zip-btn" style="border-color: var(--neon-amber); color: var(--neon-amber);">⬇ Download Folder Structure as .zip</button>
+    </section>
+
     <section class="biolume-panel">
       <div class="panel-title" style="color: var(--biolume-green);">🌱 Eco-Compute Energy Management System</div>
       
@@ -437,6 +467,86 @@
       return output;
     }
 
+
+    // ── Extract all {{variables}} from compiled .bru text
+    function extractEnvVars(bruText) {
+      const matches = [...bruText.matchAll(/\{\{([^}]+)\}\}/g)];
+      const unique = [...new Set(matches.map(m => m[1].trim()))];
+      return unique;
+    }
+
+    function renderEnvOutputs(bruText) {
+      const vars = extractEnvVars(bruText);
+      document.getElementById('output-env').value = vars.length
+        ? vars.map(v => v + '=').join('\n')
+        : '# No variables found';
+      document.getElementById('output-brunenv').value = vars.length
+        ? 'vars {\n' + vars.map(v => '  ' + v + ':').join('\n') + '\n}'
+        : '# No variables found';
+    }
+
+    function buildFolderStructure(collection) {
+      const tree = {};
+      function walk(items, path) {
+        items.forEach((item, idx) => {
+          if (item.item && Array.isArray(item.item)) {
+            const folderName = (item.name || 'folder').replace(/[^a-z0-9\-_]/gi, '-').toLowerCase();
+            tree[path + '/' + folderName] = null;
+            walk(item.item, path + '/' + folderName);
+          } else if (item.request) {
+            const reqName = (item.name || 'request').replace(/[^a-z0-9\-_]/gi, '-').toLowerCase();
+            tree[path + '/' + reqName + '.bru'] = parsePostmanItem(item, idx + 1);
+          }
+        });
+      }
+      const rootName = ((collection.info && collection.info.name) || 'collection').replace(/[^a-z0-9\-_]/gi, '-').toLowerCase();
+      if (collection.item && Array.isArray(collection.item)) walk(collection.item, rootName);
+      return { rootName, tree };
+    }
+
+    function renderFolderTree(tree, rootName) {
+      const paths = Object.keys(tree).sort();
+      if (!paths.length) { document.getElementById('folder-tree').textContent = '(empty)'; return; }
+      let out = rootName + '/\n';
+      paths.forEach(p => {
+        const rel = p.replace(rootName + '/', '');
+        const depth = (rel.match(/\//g) || []).length;
+        const name = rel.split('/').pop();
+        out += '  '.repeat(depth) + (tree[p] === null ? '\uD83D\uDCC1 ' : '\uD83D\uDCC4 ') + name + '\n';
+      });
+      document.getElementById('folder-tree').textContent = out;
+    }
+
+    async function downloadZip(tree, rootName) {
+      const btn = document.getElementById('download-zip-btn');
+      btn.textContent = '\u23F3 Building zip...';
+      btn.disabled = true;
+      try {
+        if (!window.JSZip) {
+          await new Promise((res, rej) => {
+            const s = document.createElement('script');
+            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+            s.onload = res; s.onerror = rej;
+            document.head.appendChild(s);
+          });
+        }
+        const zip = new JSZip();
+        Object.entries(tree).forEach(([path, content]) => {
+          if (content !== null) zip.file(path, content);
+        });
+        const blob = await zip.generateAsync({ type: 'blob' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = rootName + '.zip'; a.click();
+        URL.revokeObjectURL(url);
+        btn.textContent = '\u2705 Downloaded!';
+        setTimeout(() => { btn.textContent = '\u2B07 Download Folder Structure as .zip'; btn.disabled = false; }, 2500);
+      } catch (e) {
+        btn.textContent = '\u26A0 Error: ' + e.message;
+        btn.disabled = false;
+      }
+    }
+
     document.getElementById('compile-trigger').addEventListener('click', function() {
       const inputField = document.getElementById('input-json');
       const outputField = document.getElementById('output-bru');
@@ -448,10 +558,43 @@
           postman.item.forEach((item, idx) => { compiledOutput += parsePostmanItem(item, idx + 1); });
         }
         outputField.value = compiledOutput || '# No executable request arrays located within this collection tree.';
+        renderEnvOutputs(compiledOutput);
+        const { rootName, tree } = buildFolderStructure(postman);
+        renderFolderTree(tree, rootName);
+        window._lastTree = tree;
+        window._lastRootName = rootName;
       } catch (e) {
         outputField.value = '// Compilation AST Parse Error: ' + e.message + '\n// Validate structural format correctness.';
       }
     });
+
+    document.getElementById('download-zip-btn').addEventListener('click', function() {
+      if (!window._lastTree) { alert('Compile a collection first.'); return; }
+      downloadZip(window._lastTree, window._lastRootName);
+    });
+
+    document.getElementById('copy-env-btn').addEventListener('click', function() {
+      const t = document.getElementById('output-env');
+      if (!t.value.trim()) return;
+      navigator.clipboard.writeText(t.value).then(() => {
+        const btn = document.getElementById('copy-env-btn');
+        btn.textContent = 'Copied!';
+        btn.style.background = 'var(--biolume-green)'; btn.style.color = '#050406';
+        setTimeout(() => { btn.textContent = 'Copy .env'; btn.style.background = 'rgba(255,170,0,0.1)'; btn.style.color = 'var(--vibrant-gold)'; }, 2000);
+      });
+    });
+
+    document.getElementById('copy-brunenv-btn').addEventListener('click', function() {
+      const t = document.getElementById('output-brunenv');
+      if (!t.value.trim()) return;
+      navigator.clipboard.writeText(t.value).then(() => {
+        const btn = document.getElementById('copy-brunenv-btn');
+        btn.textContent = 'Copied!';
+        btn.style.background = 'var(--biolume-green)'; btn.style.color = '#050406';
+        setTimeout(() => { btn.textContent = 'Copy .bru'; btn.style.background = 'rgba(255,170,0,0.1)'; btn.style.color = 'var(--vibrant-gold)'; }, 2000);
+      });
+    });
+
 
     const teamSlider = document.getElementById('team-slider');
     const reqSlider = document.getElementById('req-slider');
