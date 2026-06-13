@@ -3,7 +3,8 @@ name: Autonomous API Assertion Pipeline
 on:
   push:
     branches: [ main ]
-  pull_request: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   verify-api-contracts:
@@ -20,7 +21,6 @@ jobs:
       - name: Inject Global Bruno Automation CLI
         run: npm install -g @usebruno/cli
 
-      # Instructs the runner to use the root directory safely
       - name: Execute Production Contract Assertions
         run: |
           bru run ./ --env Production \
