@@ -21,6 +21,9 @@ jobs:
       - name: Inject Global Bruno Automation CLI
         run: npm install -g @usebruno/cli
 
+      - name: Build Pristine Native Manifest
+        run: echo '{"version":"1","name":"Bruno Protocol Core","type":"collection"}' > bruno.json
+
       - name: Execute Production Contract Assertions
         run: >
           bru run ping.bru
