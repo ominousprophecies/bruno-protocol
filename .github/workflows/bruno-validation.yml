@@ -1,28 +1,5 @@
-name: Autonomous API Assertion Pipeline
-
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
-jobs:
-  verify-api-contracts:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code Matrix From Git
-        uses: actions/checkout@v4
-
-      - name: Instantiate Node Core Environment
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Inject Global Bruno Automation CLI
-        run: npm install -g @usebruno/cli
-
-      - name: Execute Production Contract Assertions
+- name: Execute Production Contract Assertions
         run: |
           bru run ./ --env Production \
-            --secret system_token="${{ secrets.PROD_LIVE_BEARER_TOKEN }}" \
-            --secret client_secret="${{ secrets.PROD_VAULT_PASSKEY }}"
+            --env-var system_token="${{ secrets.PROD_LIVE_BEARER_TOKEN }}" \
+            --env-var client_secret="${{ secrets.PROD_VAULT_PASSKEY }}"
