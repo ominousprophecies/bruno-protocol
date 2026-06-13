@@ -21,8 +21,9 @@ jobs:
       - name: Inject Global Bruno Automation CLI
         run: npm install -g @usebruno/cli
 
-      - name: Build Pristine Native Manifest
+      - name: Initialize Test Workspace Directory
         run: |
+          mkdir -p tests
           cat << 'EOF' > bruno.json
           {
             "version": "1",
@@ -30,11 +31,31 @@ jobs:
             "type": "collection"
           }
           EOF
-          cp bruno.json ../ 2>/dev/null || true
+          cat << 'EOF' > tests/ping.bru
+          meta {
+            name: ping_validation
+            type: http
+            seq: 1
+          }
+          
+          get {
+            url: {{base_url}}/bearer
+            body: none
+            auth: bearer
+          }
+          
+          auth:bearer {
+            token: {{system_token}}
+          }
+          
+          assert {
+            res.status: eq 200
+          }
+          EOF
 
       - name: Execute Production Contract Assertions
         run: >
-          bru run bru run tests/
+          bru run tests/
           --env Production
           --env-var system_token="${{ secrets.PROD_LIVE_BEARER_TOKEN }}"
           --env-var client_secret="${{ secrets.PROD_VAULT_PASSKEY }}"
