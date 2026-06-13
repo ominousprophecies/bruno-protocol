@@ -1,0 +1,31 @@
+meta {
+  name: login_validation
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "client_id": "{{client_secret}}",
+    "grant_type": "client_credentials"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.token: isString
+}
+
+script:post-response {
+  // Optional: This saves the token dynamically into memory 
+  // so subsequent requests in your collection can reuse it!
+  if (res.status === 200 && res.body.token) {
+    bru.setEnvVar("auth_token", res.body.token);
+  }
+}
