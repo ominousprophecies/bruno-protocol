@@ -34,6 +34,7 @@ jobs:
       - name: Execute Production Contract Assertions
         run: >
           bru run ping.bru
+          --workspace-path .
           --env Production
           --env-var system_token="${{ secrets.PROD_LIVE_BEARER_TOKEN }}"
           --env-var client_secret="${{ secrets.PROD_VAULT_PASSKEY }}"
