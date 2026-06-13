@@ -21,20 +21,9 @@ jobs:
       - name: Inject Global Bruno Automation CLI
         run: npm install -g @usebruno/cli
 
-      # ==============================================================================
-      # THIS IS WHERE THE NETWORK SEPARATION LOGIC LIVES
-      # It pulls your keys securely from GitHub Secrets and passes them into the runner
-      # ==============================================================================
+      # Reconfigured to run directly out of your root folder to find your environments/ directory
       - name: Execute Production Contract Assertions
         run: |
-          bru run bruno/ --env Production \
+          bru run ./ --env Production \
             --secret system_token="${{ secrets.PROD_LIVE_BEARER_TOKEN }}" \
-            --secret client_secret="${{ secrets.PROD_VAULT_PASSKEY }}" \
-            --output production-audit-log.html
-
-      - name: Archive Compliance Validation Artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: api-compliance-report
-          path: production-audit-log.html
+            --secret client_secret="${{ secrets.PROD_VAULT_PASSKEY }}"
