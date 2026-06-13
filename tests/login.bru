@@ -19,13 +19,11 @@ body:json {
 
 assert {
   res.status: eq 200
-  res.body.token: isString
+  res.body.url: isString
 }
 
 script:post-response {
-  // Optional: This saves the token dynamically into memory 
-  // so subsequent requests in your collection can reuse it!
-  if (res.status === 200 && res.body.token) {
-    bru.setEnvVar("auth_token", res.body.token);
+  if (res.status === 200 && res.body.url) {
+    bru.setEnvVar("last_validated_url", res.body.url);
   }
 }
