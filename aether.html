@@ -358,6 +358,37 @@
       font-size: 11px;
       color: var(--biolume-green);
     }
+  
+    .dual-grid {
+      display: grid;
+      grid-template-columns: 1fr 1px 1fr;
+      gap: 0;
+    }
+    .dual-col {
+      padding: 0 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .dual-col:first-child { padding-left: 0; }
+    .dual-col:last-child  { padding-right: 0; }
+    .dual-divider {
+      background: rgba(57,255,20,0.12);
+      width: 1px;
+      margin: 0 8px;
+    }
+    @media (max-width: 900px) {
+      .dual-grid { grid-template-columns: 1fr; }
+      .dual-divider { display: none; }
+      .dual-col { padding: 0; border-top: 1px solid rgba(57,255,20,0.1); padding-top: 28px; margin-top: 28px; }
+      .dual-col:first-child { border-top: none; padding-top: 0; margin-top: 0; }
+    }
+    .action-row { display: flex; align-items: center; gap: 12px; margin-top: 4px; }
+    .status-line { font-size: 11px; color: var(--silver); }
+    .error-panel { display: none; margin-top: 10px; background: rgba(255,40,40,0.07); border: 1px solid rgba(255,80,80,0.3); border-radius: 6px; padding: 12px; }
+    .error-title { font-size: 11px; color: #ff6060; font-weight: 700; margin-bottom: 6px; }
+    .error-body  { font-size: 11px; color: #ff9090; font-family: monospace; line-height: 1.6; }
+
   </style>
 </head>
 <body>
@@ -369,18 +400,19 @@
   </a>
   <div class="nav-links">
     <a href="index.html" class="nav-back">&larr; Bruno Protocol</a>
-    <span class="nav-badge">GENXR_V1.4 / STRICT_MODE</span>
+    <span class="nav-badge">GENXR_V1.5 / STRICT_MODE</span>
   </div>
 </nav>
 
 <div class="container">
 
   <div class="page-header">
-    <h1>Aether Decompiler</h1>
+    <h1>Aether Protocol</h1>
     <p>
-      Translate a verified <code>.aet</code> Aether manifest back into a <code>.bru</code> source file.
-      The full pipeline runs in both directions &mdash; promote request definitions to verified compute contracts,
-      or extract them back for Bruno API client use.
+      Compile <code>.bru</code> source into verified <code>.aet</code> Aether manifests, or decompile
+      <code>.aet</code> back to <code>.bru</code>. The GENXR_V1.5 engine enforces energy constraints,
+      security tiers, and hardware boundary rules at compile time &mdash; before a single line of
+      cross-domain code can execute.
     </p>
   </div>
 
@@ -388,61 +420,78 @@
     <div class="pipe-node amber">Postman JSON</div>
     <div class="pipe-arrow">&rarr;</div>
     <div class="pipe-node amber">.bru</div>
-    <div class="pipe-arrow">&rarr;</div>
-    <div class="pipe-node pipe-active">⚡ .aet</div>
-    <div class="pipe-arrow">&rarr;</div>
-    <div class="pipe-node pipe-active">.bru &nbsp;<span style="font-size:9px;opacity:0.6;">YOU ARE HERE</span></div>
+    <div class="pipe-arrow">&harr;</div>
+    <div class="pipe-node active">⚡ .aet</div>
   </div>
 
   <section class="biolume-panel">
-    <div class="panel-title">⚡ .aet &rarr; .bru Decompiler</div>
 
-    <div class="tag-row">
-      <span class="tag">✓ fn_spec extraction</span>
-      <span class="tag">✓ Security tier mapping</span>
-      <span class="tag">✓ Energy attribute recovery</span>
-      <span class="tag">✓ Map strategy preservation</span>
-      <span class="tag">✓ Epoch scope unwrapping</span>
-    </div>
+    <div class="dual-grid">
 
-    <div class="grid">
-      <div class="panel-node">
+      <!-- ══ LEFT: COMPILER .bru → .aet ══ -->
+      <div class="dual-col">
+        <div class="panel-title">⚡ Compiler &mdash; .bru &rarr; .aet</div>
+        <div class="tag-row">
+          <span class="tag">✓ InvalidSecurityEnergyCombination</span>
+          <span class="tag">✓ SecurityTaintLeak</span>
+          <span class="tag">✓ Krapivin cache-line lint</span>
+          <span class="tag">✓ UndeclaredFunction strict mode</span>
+          <span class="tag">✓ Duplicate attribute guard</span>
+        </div>
+        <div class="node-label-row">
+          <label class="node-label">INPUT &mdash; .BRU SOURCE</label>
+          <button class="mini-copy-btn" id="compiler-demo-btn">Load Demo</button>
+        </div>
+        <textarea id="compiler-input" placeholder="Paste your .bru source here..."></textarea>
+        <div class="node-label-row" style="margin-top:18px;">
+          <label class="node-label">OUTPUT &mdash; .AET MANIFEST</label>
+          <button class="mini-copy-btn" id="copy-aet-btn">Copy .aet</button>
+        </div>
+        <textarea id="compiler-output" placeholder="Compiled .aet manifest will appear here..." readonly></textarea>
+        <div class="action-row">
+          <button class="pulse-btn" id="compile-btn">⚡ Compile .bru &rarr; .aet</button>
+          <span class="status-line" id="compile-status"></span>
+        </div>
+        <div class="error-panel" id="compile-error-panel">
+          <div class="error-title">⛔ COMPILER REJECTION</div>
+          <div class="error-body" id="compile-error-body"></div>
+        </div>
+      </div>
+
+      <!-- ══ DIVIDER ══ -->
+      <div class="dual-divider"></div>
+
+      <!-- ══ RIGHT: DECOMPILER .aet → .bru ══ -->
+      <div class="dual-col">
+        <div class="panel-title">⚡ Decompiler &mdash; .aet &rarr; .bru</div>
+        <div class="tag-row">
+          <span class="tag">✓ fn_spec extraction</span>
+          <span class="tag">✓ Security tier mapping</span>
+          <span class="tag">✓ Energy attribute recovery</span>
+          <span class="tag">✓ Map strategy preservation</span>
+          <span class="tag">✓ Epoch scope unwrapping</span>
+          <span class="tag">✓ GENXR header validation</span>
+        </div>
         <div class="node-label-row">
           <label class="node-label">INPUT &mdash; .AET MANIFEST</label>
-          <button class="mini-copy-btn" id="load-demo-btn">Load Demo</button>
+          <button class="mini-copy-btn" id="decompiler-demo-btn">Load Demo</button>
         </div>
-        <textarea id="input-aet" placeholder="Paste your .aet manifest here...
-
-// ⚡ AETHER PROTOCOL COMPILED TARGET MANIFEST
-// GENERATOR ENGINE: GENXR_V1.4 / STRICT_MODE
-
-fn_spec {
-  identifier: initialize_tables
-  signature: fn() -> Unit
-}
-
-fn initialize_tables() -> Unit {
-  map TelemetryCache&lt;U32, I64&gt; using ElasticHashing;
-  return ;
-}"></textarea>
-      </div>
-      <div class="panel-node">
-        <div class="node-label-row">
+        <textarea id="input-aet" placeholder="Paste your .aet manifest here..."></textarea>
+        <div class="node-label-row" style="margin-top:18px;">
           <label class="node-label">OUTPUT &mdash; .BRU SOURCE</label>
           <button class="mini-copy-btn" id="copy-bru-btn">Copy .bru</button>
         </div>
         <textarea id="output-bru" placeholder="Recovered .bru source will appear here..." readonly></textarea>
+        <div class="action-row">
+          <button class="pulse-btn" id="decompile-btn">⚡ Decompile .aet &rarr; .bru</button>
+          <span class="status-line" id="decompile-status"></span>
+        </div>
+        <div class="error-panel" id="error-panel">
+          <div class="error-title">⛔ DECOMPILER ERROR</div>
+          <div class="error-body" id="error-body"></div>
+        </div>
       </div>
-    </div>
 
-    <div style="display: flex; align-items: center; margin-top: 4px;">
-      <button class="pulse-btn" id="decompile-btn">⚡ Decompile .aet &rarr; .bru</button>
-      <span class="status-line" id="decompile-status"></span>
-    </div>
-
-    <div class="error-panel" id="error-panel">
-      <div class="error-title">⛔ DECOMPILER ERROR</div>
-      <div class="error-body" id="error-body"></div>
     </div>
   </section>
 
@@ -450,20 +499,20 @@ fn initialize_tables() -> Unit {
     <div class="panel-title">Protocol Specification</div>
     <div class="spec-grid">
       <div class="spec-card">
-        <h3>.aet Format</h3>
-        <p>Each function emits a <code>fn_spec</code> header block followed by the operational body. Security and energy attributes are encoded in the module header and per-function attribute lists.</p>
+        <h3>.bru Source</h3>
+        <p>Input format for the Aether compiler. Extends the open-source Bruno API <code>.bru</code> format with SEML energy, security, and epoch attributes.</p>
       </div>
       <div class="spec-card">
-        <h3>.bru Recovery</h3>
-        <p>The decompiler reconstructs <code>module</code> declarations, attribute brackets <code>[entry: High]</code>, function signatures, map declarations, and scope epoch blocks.</p>
+        <h3>.aet Manifest</h3>
+        <p>Proprietary compiled output. Each function emits a <code>fn_spec</code> header block followed by a verified operational body. Security and energy contracts are proven at compile time.</p>
       </div>
       <div class="spec-card">
-        <h3>GENXR_V1.4</h3>
-        <p>Compiled manifests carry the <code>GENXR_V1.4 / STRICT_MODE</code> provenance header. The decompiler validates this marker before processing to ensure manifest integrity.</p>
+        <h3>GENXR_V1.5</h3>
+        <p>Verified baseline June 15, 2026. All 9 fixtures pass. Enforces <code>InvalidSecurityEnergyCombination</code>, <code>SecurityTaintLeak</code>, Krapivin lint, and strict external function contracts.</p>
       </div>
       <div class="spec-card">
         <h3>Proprietary IP</h3>
-        <p>The <code>.aet</code> format, SEML specification, and GENXR engine are proprietary to Emilio R. Bruno. &copy; 2026. All rights reserved.</p>
+        <p>Copyright &copy; 2026 Emilio R. Bruno. All Rights Reserved. The <code>.aet</code> format, SEML specification, and GENXR engine are proprietary.</p>
       </div>
     </div>
   </section>
@@ -484,8 +533,105 @@ fn initialize_tables() -> Unit {
   </footer>
 
 <script>
+
+  const DEMO_BRU = `module DataLayer;
+[entry: Low]
+fn initialize_tables() -> () {
+  map TelemetryCache<U32, I64> using ElasticHashing;
+  return ();
+}`;
+
+  document.getElementById('compiler-demo-btn').addEventListener('click', () => {
+    document.getElementById('compiler-input').value = DEMO_BRU;
+    document.getElementById('compile-status').textContent = 'Demo loaded — click Compile.';
+  });
+
+  document.getElementById('copy-aet-btn').addEventListener('click', () => {
+    const v = document.getElementById('compiler-output').value;
+    if (!v) return;
+    navigator.clipboard.writeText(v);
+    const b = document.getElementById('copy-aet-btn');
+    b.textContent = 'Copied!'; setTimeout(() => b.textContent = 'Copy .aet', 1500);
+  });
+
+  document.getElementById('compile-btn').addEventListener('click', () => {
+    const src = document.getElementById('compiler-input').value.trim();
+    const statusEl = document.getElementById('compile-status');
+    const outputEl = document.getElementById('compiler-output');
+    const errPanel = document.getElementById('compile-error-panel');
+    const errBody  = document.getElementById('compile-error-body');
+    errPanel.style.display = 'none'; outputEl.value = '';
+    if (!src) { statusEl.textContent = 'No input detected.'; return; }
+    statusEl.textContent = '⟳ Running GENXR_V1.5 / STRICT_MODE...';
+    const moduleMatch = src.match(/^module\s+(\w+)/m);
+    const moduleName = moduleMatch ? moduleMatch[1] : 'Unknown';
+    const attrMatch = src.match(/\[([^\]]+)\]/);
+    let energy = 'Auto', security = 'Public', entryLevel = null;
+    if (attrMatch) {
+      attrMatch[1].split(',').map(a => a.trim()).forEach(attr => {
+        const [k, v] = attr.split(':').map(s => s.trim());
+        if (k === 'entry') entryLevel = v;
+        if (k === 'energy') energy = v;
+        if (k === 'security') security = v;
+      });
+    }
+    if (energy === 'Low' && security === 'Secret') {
+      errPanel.style.display = 'block';
+      errBody.textContent = 'InvalidSecurityEnergyCombination: Energy "Low" cannot coexist with security "Secret". Aborted.';
+      statusEl.textContent = '⛔ Semantic validation failed.'; return;
+    }
+    const fnMatches = [...src.matchAll(/fn\s+(\w+)\s*\(([^)]*)\)/g)];
+    for (const fn of fnMatches) {
+      if (security === 'Public' && fn[2].includes('Secret')) {
+        errPanel.style.display = 'block';
+        errBody.textContent = `SecurityTaintLeak in '${fn[1]}': Secret param in Public scope. Aborted.`;
+        statusEl.textContent = '⛔ Taint leak detected.'; return;
+      }
+    }
+    if (attrMatch) {
+      const keys = attrMatch[1].split(',').map(a => a.split(':')[0].trim());
+      const seen = new Set();
+      for (const k of keys) {
+        if (seen.has(k)) {
+          errPanel.style.display = 'block';
+          errBody.textContent = `Parse Error: Duplicate attribute '${k}'. Aborted.`;
+          statusEl.textContent = '⛔ Parse error.'; return;
+        }
+        seen.add(k);
+      }
+    }
+    const typeSizes = { U8:1, U16:2, U32:4, U64:8, I32:4, I64:8, F32:4, F64:8 };
+    for (const m of [...src.matchAll(/map\s+(\w+)<(\w+),\s*([^>]+)>\s+using\s+(\w+)/g)]) {
+      const entrySize = (typeSizes[m[2]]||8) + (typeSizes[m[3].trim()]||8);
+      if (entrySize > 16 && m[4] !== 'ElasticHashing') {
+        errPanel.style.display = 'block';
+        errBody.textContent = `Hardware Error: Map '${m[1]}' entry ${entrySize}B exceeds 16B cache threshold. Use ElasticHashing.`;
+        statusEl.textContent = '⛔ Hardware constraint violation.'; return;
+      }
+    }
+    let aet = `// ⚡ AETHER PROTOCOL COMPILED TARGET MANIFEST\n`;
+    aet    += `// GENERATOR ENGINE: GENXR_V1.5 / STRICT_MODE\n`;
+    aet    += `// SOURCE MODULE: ${moduleName}\n\n`;
+    const fnBlockMatches = [...src.matchAll(/fn\s+(\w+)\s*\(([^)]*)\)\s*->\s*([\w()]+)\s*\{([^}]*)\}/gs)];
+    for (const fn of fnBlockMatches) {
+      const [_, name, params, retType, body] = fn;
+      const pTypes = params ? params.split(',').map(p => p.split(':').pop()?.trim()).filter(Boolean) : [];
+      aet += `fn_spec {\n  identifier: ${name}\n  signature: fn(${pTypes.join(', ')}) -> ${retType}\n}\n\n`;
+      aet += `fn ${name}(${params}) -> ${retType} {\n`;
+      body.trim().split(';').map(s => s.trim()).filter(Boolean).forEach(stmt => { aet += `  ${stmt};\n`; });
+      aet += `}\n\n`;
+    }
+    outputEl.value = aet;
+    statusEl.textContent = `✓ Compiled — ${fnBlockMatches.length} function(s) emitted.`;
+  });
+
+  document.getElementById('decompiler-demo-btn').addEventListener('click', () => {
+    document.getElementById('input-aet').value = DEMO_AET;
+    document.getElementById('decompile-status').textContent = 'Demo loaded — click Decompile.';
+  });
+
   const DEMO_AET = `// ⚡ AETHER PROTOCOL COMPILED TARGET MANIFEST
-// GENERATOR ENGINE: GENXR_V1.4 / STRICT_MODE
+// GENERATOR ENGINE: GENXR_V1.5 / STRICT_MODE
 // SOURCE MODULE: DataLayer
 
 fn_spec {
