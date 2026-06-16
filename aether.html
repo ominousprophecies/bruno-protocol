@@ -359,30 +359,15 @@
       color: var(--biolume-green);
     }
   
-    .dual-grid {
+    .tool-block { margin-bottom: 40px; }
+    .tool-block:last-child { margin-bottom: 0; }
+    .tool-grid {
       display: grid;
-      grid-template-columns: 1fr 3px 1fr;
-      gap: 0;
+      grid-template-columns: 1fr 1fr;
+      gap: 35px;
+      margin-bottom: 16px;
     }
-    .dual-col {
-      padding: 0 28px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .dual-col:first-child { padding-left: 0; }
-    .dual-col:last-child  { padding-right: 0; }
-    .dual-divider {
-      background: rgba(57,255,20,0.4);
-      width: 3px;
-      margin: 0 8px;
-    }
-    @media (max-width: 900px) {
-      .dual-grid { grid-template-columns: 1fr; }
-      .dual-divider { display: none; }
-      .dual-col { padding: 0; border-top: 1px solid rgba(57,255,20,0.1); padding-top: 28px; margin-top: 28px; }
-      .dual-col:first-child { border-top: none; padding-top: 0; margin-top: 0; }
-    }
+    @media (max-width: 768px) { .tool-grid { grid-template-columns: 1fr; } }
     .action-row { display: flex; align-items: center; gap: 12px; margin-top: 4px; }
     .status-line { font-size: 11px; color: var(--silver); }
     .error-panel { display: none; margin-top: 10px; background: rgba(255,40,40,0.07); border: 1px solid rgba(255,80,80,0.3); border-radius: 6px; padding: 12px; }
@@ -426,72 +411,79 @@
 
   <section class="biolume-panel">
 
-    <div class="dual-grid">
-
-      <!-- ══ LEFT: COMPILER .bru → .aet ══ -->
-      <div class="dual-col">
-        <div class="panel-title">⚡ Compiler &mdash; .bru &rarr; .aet</div>
-        <div class="tag-row">
-          <span class="tag">✓ InvalidSecurityEnergyCombination</span>
-          <span class="tag">✓ SecurityTaintLeak</span>
-          <span class="tag">✓ Krapivin cache-line lint</span>
-          <span class="tag">✓ UndeclaredFunction strict mode</span>
-          <span class="tag">✓ Duplicate attribute guard</span>
+    <!-- ══ COMPILER .bru → .aet ══ -->
+    <div class="tool-block">
+      <div class="panel-title">⚡ Compiler &mdash; .bru &rarr; .aet</div>
+      <div class="tag-row">
+        <span class="tag">✓ InvalidSecurityEnergyCombination</span>
+        <span class="tag">✓ SecurityTaintLeak</span>
+        <span class="tag">✓ Krapivin cache-line lint</span>
+        <span class="tag">✓ UndeclaredFunction strict mode</span>
+        <span class="tag">✓ Duplicate attribute guard</span>
+      </div>
+      <div class="tool-grid">
+        <div class="panel-node">
+          <div class="node-label-row">
+            <label class="node-label">INPUT &mdash; .BRU SOURCE</label>
+            <button class="mini-copy-btn" id="compiler-demo-btn">Load Demo</button>
+          </div>
+          <textarea id="compiler-input" placeholder="Paste your .bru source here..."></textarea>
         </div>
-        <div class="node-label-row">
-          <label class="node-label">INPUT &mdash; .BRU SOURCE</label>
-          <button class="mini-copy-btn" id="compiler-demo-btn">Load Demo</button>
-        </div>
-        <textarea id="compiler-input" placeholder="Paste your .bru source here..."></textarea>
-        <div class="node-label-row" style="margin-top:18px;">
-          <label class="node-label">OUTPUT &mdash; .AET MANIFEST</label>
-          <button class="mini-copy-btn" id="copy-aet-btn">Copy .aet</button>
-        </div>
-        <textarea id="compiler-output" placeholder="Compiled .aet manifest will appear here..." readonly></textarea>
-        <div class="action-row">
-          <button class="pulse-btn" id="compile-btn">⚡ Compile .bru &rarr; .aet</button>
-          <span class="status-line" id="compile-status"></span>
-        </div>
-        <div class="error-panel" id="compile-error-panel">
-          <div class="error-title">⛔ COMPILER REJECTION</div>
-          <div class="error-body" id="compile-error-body"></div>
+        <div class="panel-node">
+          <div class="node-label-row">
+            <label class="node-label">OUTPUT &mdash; .AET MANIFEST</label>
+            <button class="mini-copy-btn" id="copy-aet-btn">Copy .aet</button>
+          </div>
+          <textarea id="compiler-output" placeholder="Compiled .aet manifest will appear here..." readonly></textarea>
         </div>
       </div>
+      <div class="action-row">
+        <button class="pulse-btn" id="compile-btn">⚡ Compile .bru &rarr; .aet</button>
+        <span class="status-line" id="compile-status"></span>
+      </div>
+      <div class="error-panel" id="compile-error-panel">
+        <div class="error-title">⛔ COMPILER REJECTION</div>
+        <div class="error-body" id="compile-error-body"></div>
+      </div>
+    </div>
 
-      <!-- ══ DIVIDER ══ -->
-      <div class="dual-divider"></div>
+    <hr style="border:none;border-top:1px solid rgba(57,255,20,0.15);margin:36px 0;">
 
-      <!-- ══ RIGHT: DECOMPILER .aet → .bru ══ -->
-      <div class="dual-col">
-        <div class="panel-title">⚡ Decompiler &mdash; .aet &rarr; .bru</div>
-        <div class="tag-row">
-          <span class="tag">✓ fn_spec extraction</span>
-          <span class="tag">✓ Security tier mapping</span>
-          <span class="tag">✓ Energy attribute recovery</span>
-          <span class="tag">✓ Map strategy preservation</span>
-          <span class="tag">✓ Epoch scope unwrapping</span>
-          <span class="tag">✓ GENXR header validation</span>
+    <!-- ══ DECOMPILER .aet → .bru ══ -->
+    <div class="tool-block">
+      <div class="panel-title">⚡ Decompiler &mdash; .aet &rarr; .bru</div>
+      <div class="tag-row">
+        <span class="tag">✓ fn_spec extraction</span>
+        <span class="tag">✓ Security tier mapping</span>
+        <span class="tag">✓ Energy attribute recovery</span>
+        <span class="tag">✓ Map strategy preservation</span>
+        <span class="tag">✓ Epoch scope unwrapping</span>
+        <span class="tag">✓ GENXR header validation</span>
+      </div>
+      <div class="tool-grid">
+        <div class="panel-node">
+          <div class="node-label-row">
+            <label class="node-label">INPUT &mdash; .AET MANIFEST</label>
+            <button class="mini-copy-btn" id="decompiler-demo-btn">Load Demo</button>
+          </div>
+          <textarea id="input-aet" placeholder="Paste your .aet manifest here..."></textarea>
         </div>
-        <div class="node-label-row">
-          <label class="node-label">INPUT &mdash; .AET MANIFEST</label>
-          <button class="mini-copy-btn" id="decompiler-demo-btn">Load Demo</button>
-        </div>
-        <textarea id="input-aet" placeholder="Paste your .aet manifest here..."></textarea>
-        <div class="node-label-row" style="margin-top:18px;">
-          <label class="node-label">OUTPUT &mdash; .BRU SOURCE</label>
-          <button class="mini-copy-btn" id="copy-bru-btn">Copy .bru</button>
-        </div>
-        <textarea id="output-bru" placeholder="Recovered .bru source will appear here..." readonly></textarea>
-        <div class="action-row">
-          <button class="pulse-btn" id="decompile-btn">⚡ Decompile .aet &rarr; .bru</button>
-          <span class="status-line" id="decompile-status"></span>
-        </div>
-        <div class="error-panel" id="error-panel">
-          <div class="error-title">⛔ DECOMPILER ERROR</div>
-          <div class="error-body" id="error-body"></div>
+        <div class="panel-node">
+          <div class="node-label-row">
+            <label class="node-label">OUTPUT &mdash; .BRU SOURCE</label>
+            <button class="mini-copy-btn" id="copy-bru-btn">Copy .bru</button>
+          </div>
+          <textarea id="output-bru" placeholder="Recovered .bru source will appear here..." readonly></textarea>
         </div>
       </div>
-
+      <div class="action-row">
+        <button class="pulse-btn" id="decompile-btn">⚡ Decompile .aet &rarr; .bru</button>
+        <span class="status-line" id="decompile-status"></span>
+      </div>
+      <div class="error-panel" id="error-panel">
+        <div class="error-title">⛔ DECOMPILER ERROR</div>
+        <div class="error-body" id="error-body"></div>
+      </div>
     </div>
   </section>
 
@@ -644,7 +636,7 @@ fn initialize_tables() -> Unit {
   return ;
 }`;
 
-  document.getElementById('load-demo-btn').addEventListener('click', () => {
+  document.getElementById('decompiler-demo-btn').addEventListener('click', () => {
     document.getElementById('input-aet').value = DEMO_AET;
     document.getElementById('decompile-status').textContent = 'Demo loaded — click Decompile.';
   });
