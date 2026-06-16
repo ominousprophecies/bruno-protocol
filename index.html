@@ -1100,14 +1100,47 @@
 <!-- Open Source Licensing Section -->
   <section class="licensing-section" style="padding: 60px 20px; background-color: #0f1115; color: #fff; text-align: center; border-top: 1px solid #1e222b;">
     <div style="max-width: 800px; margin: 0 auto;">
-      <h3 style="font-size: 1.8rem; margin-bottom: 20px; color: #38bdf8;">Open Source & Community Driven</h3>
-      <p style="font-size: 1.1rem; line-height: 1.7; color: #9ca3af; margin-bottom: 25px;">
-        The Bruno Protocol is open-source software distributed under the permissive <strong>MIT License</strong>. 
-        You are completely free to download, modify, distribute, and build commercial applications on top of the 
-        core automation layer without restriction.
-      </p>
-      <a href="/LICENSE.txt" target="_blank" style="color: #38bdf8; text-decoration: none; font-weight: 600; border-bottom: 1px dashed #38bdf8;">View Full MIT License Terms</a>
-    </div>
-  </section>
+     <p>
+  The Bruno Protocol is open-source software distributed under the permissive <strong>MIT License</strong>.
+  You are completely free to download, modify, distribute, and build commercial applications on top of the 
+  core automation layer without restriction.
+  <a href="javascript:void(0)" onclick="openLicenseModal()" style="color: #10b981; text-decoration: underline; font-weight: 600;">View Full MIT License Terms</a>
+</p>
+</section>
+</div>
 </body>
+
+<!-- Defensive Dual-License Overlay Panel -->
+<div id="licenseModal" style="display: none; position: fixed; inset: 0; background-color: rgba(0,0,0,0.85); align-items: center; justify-content: center; padding: 1rem; z-index: 9999; font-family: sans-serif;">
+  <div style="background-color: #111827; border: 1px solid #374151; border-radius: 0.5rem; max-width: 42rem; width: 100%; padding: 1.5rem; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); color: #fff;">
+    <button onclick="closeLicenseModal()" style="position: absolute; top: 1rem; right: 1rem; color: #9ca3af; background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+    <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; color: #fff;">⚡ BRUNO PROTOCOL — SYSTEM CORE LICENSE</h3>
+    <p style="font-size: 0.75rem; color: #9ca3af; margin-bottom: 1rem;">Classification: Public Open-Source Interface / Enterprise Moat Gateway[cite: 1]</p>
+    
+    <textarea readonly style="background-color: #000; color: #d1d5db; font-family: monospace; font-size: 0.75rem; padding: 1rem; border-radius: 0.25rem; border: 1px solid #1f2937; width: 100%; height: 16rem; resize: none; white-space: pre-wrap;">
+BRUNO PROTOCOL — CORE AUTOMATION LAYER LICENSE
+Copyright (c) 2026 BRUNO PROTOCOL Core Team. All Rights Reserved.
+
+The basic user interface, text conversion scripts, and local decompilation modules hosted publicly on github.com/bruno-protocol/bruno-protocol are distributed under the permissive MIT License. You are completely free to download, modify, distribute, and build applications on top of this layer without restriction.
+
+--------------------------------------------------------------------------------
+PROPRIETARY ENTERPRISE INFRASTRUCTURE NOTICE:[cite: 1]
+--------------------------------------------------------------------------------
+The automated Abstract Syntax Tree (AST) Neural Array Optimization Engine, the Eco-Compute Carbon Intensity Benchmarking Models, and associated server-side or localized enterprise stress-testing matrices remain the exclusive, closed-source intellectual property and proprietary trade secrets of the BRUNO PROTOCOL Core Team[cite: 1].
+
+No license, implied or express, is granted to copy, reverse-engineer, or decompile the mathematical data center energy avoidance calculation matrices without entering into a formalized Commercial Joint Venture or signing a Mutual Non-Disclosure Agreement[cite: 1].
+
+For enterprise integration inquiries or sovereign procurement verification, contact:
+info@bruno-protocol.org</textarea>
+    
+    <div style="margin-top: 1rem; text-align: right;">
+      <button onclick="closeLicenseModal()" style="background-color: #059669; color: #fff; font-weight: 700; font-size: 0.75rem; padding: 0.5rem 1rem; border: none; border-radius: 0.25rem; cursor: pointer;">Acknowledge terms</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openLicenseModal() { document.getElementById('licenseModal').style.display = 'flex'; }
+  function closeLicenseModal() { document.getElementById('licenseModal').style.display = 'none'; }
+</script>
 </html>
