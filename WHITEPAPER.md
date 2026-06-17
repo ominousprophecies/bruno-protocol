@@ -104,7 +104,8 @@ By compressing safety verification and code generation into a sub-millisecond, s
 
 ---
 
-*For interactive verification testing and specification access, visit **bruno-protocol.org**.*
+*For interactive verification testing and specification access, visit **bruno-protocol.org** info@bruno-protcol.org
+
 git add WHITEPAPER.md tests/fixtures/
 git commit -m "spec: formalize Aether Bounded Direct Resolution v1.9-Final telemetry"
 git push origin main
