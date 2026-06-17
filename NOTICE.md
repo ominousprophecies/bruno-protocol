@@ -7,7 +7,7 @@ Copyright © 2026 Emili. All Rights Reserved.
 ## Authorship
 
 The Aether Compiler Frontend was conceived, designed, directed, and authored
-by Emili. The architecture, language specification, security enforcement model,
+by Emilio R.Bruno. The architecture, language specification, security enforcement model,
 hardware constraint system, and all associated intellectual property decisions
 were made by the copyright holder.
 
