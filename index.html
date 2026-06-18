@@ -316,6 +316,7 @@
       </div>
       <p style="font-size: 11px; color: var(--silver); margin: -8px 0 14px 0; line-height: 1.6; opacity: 0.8;">Output below is a flat <code style="background: rgba(255,170,0,0.1); padding: 2px 5px; border-radius: 3px;">.bru</code> stream — folder structure is not encoded in individual files. Use the <strong style="color: var(--neon-amber);">Folder-Aware Export</strong> below to get a <code style="background: rgba(255,170,0,0.1); padding: 2px 5px; border-radius: 3px;">.zip</code> that drops directly into Bruno with folders intact.</p>
       <button class="pulse-btn" id="compile-trigger">⚡ Execute Matrix Conversion Loop ⚡</button>
+      <p id="compile-status" style="font-size: 11px; color: var(--silver); margin: 10px 0 0 0; min-height: 16px; letter-spacing: 0.05em;"></p>
     </section>
 
 
@@ -651,21 +652,81 @@
     document.getElementById('compile-trigger').addEventListener('click', function() {
       const inputField = document.getElementById('input-json');
       const outputField = document.getElementById('output-bru');
-      if (!inputField.value.trim()) return;
+      const statusEl = document.getElementById('compile-status');
+
+      // Strip BOM and leading/trailing whitespace
+      let raw = inputField.value.replace(/^\uFEFF/, '').trim();
+      if (!raw) return;
+
+      // Detect common paste mistakes before attempting parse
+      if (raw.startsWith('meta {') || raw.startsWith('get {') || raw.startsWith('post {')) {
+        outputField.value = '// Input Error: This looks like .bru source, not a Postman JSON collection.\n// Use the Reverse Compiler panel below to convert .bru → Postman.';
+        if (statusEl) statusEl.textContent = '⚠ Wrong direction — paste Postman JSON here, not .bru';
+        return;
+      }
+      if (!raw.startsWith('{') && !raw.startsWith('[')) {
+        outputField.value = '// Input Error: Input does not appear to be JSON.\n// Export your collection from Postman: Collection → ··· → Export → Collection v2.1\n// Then paste the full JSON content here.';
+        if (statusEl) statusEl.textContent = '⚠ Input is not JSON';
+        return;
+      }
+
+      let postman;
       try {
-        const postman = JSON.parse(inputField.value);
+        postman = JSON.parse(raw);
+      } catch(e) {
+        // Extract position hint from error message if available
+        const posMatch = e.message.match(/position (\d+)/i);
+        let hint = '';
+        if (posMatch) {
+          const pos = parseInt(posMatch[1]);
+          const snippet = raw.slice(Math.max(0, pos - 30), pos + 30).replace(/\n/g, '↵');
+          hint = `\n// Near character ${pos}: ...${snippet}...`;
+        }
+        // Detect v2.0 schema
+        const schemaHint = raw.includes('"schema": "https://schema.getpostman.com/json/collection/v2.0')
+          ? '\n// Detected Postman Collection v2.0 — please re-export as v2.1 (Collection → ··· → Export → Collection v2.1.0)'
+          : '';
+        outputField.value = `// JSON Parse Error: ${e.message}${hint}${schemaHint}\n//\n// How to fix:\n// 1. In Postman, open your Collection → click ··· (three dots) → Export\n// 2. Choose "Collection v2.1" format\n// 3. Open the downloaded .json file, select all, paste here\n// 4. Make sure there is no extra text before or after the JSON`;
+        if (statusEl) statusEl.textContent = '⚠ JSON parse failed — see output for details';
+        return;
+      }
+
+      // Validate it's actually a Postman collection structure
+      if (!postman.info || !postman.item) {
+        const keys = Object.keys(postman).slice(0, 6).join(', ');
+        outputField.value = `// Structure Error: This JSON is not a Postman Collection.\n// Expected top-level keys: "info", "item"\n// Found keys: ${keys}\n//\n// Make sure you export the entire Collection, not just a single request or environment.`;
+        if (statusEl) statusEl.textContent = '⚠ Not a valid Postman collection structure';
+        return;
+      }
+
+      // Check for v2.0 schema warning (can still attempt compile)
+      const schema = postman.info?.schema || '';
+      if (schema.includes('v2.0.0') && !schema.includes('v2.1')) {
+        outputField.value = '// Warning: Postman Collection v2.0 detected. Attempting compile — some fields may not map correctly.\n// For best results, re-export as Collection v2.1.\n\n';
+      } else {
+        outputField.value = '';
+      }
+
+      try {
         let compiledOutput = '';
-        if (postman.item && Array.isArray(postman.item)) {
+        if (Array.isArray(postman.item)) {
           postman.item.forEach((item, idx) => { compiledOutput += parsePostmanItem(item, idx + 1); });
         }
-        outputField.value = compiledOutput || '# No executable request arrays located within this collection tree.';
+        if (!compiledOutput.trim()) {
+          outputField.value += '# No executable requests found in this collection.\n# The collection may contain only folders with no requests inside, or all items were skipped.';
+          if (statusEl) statusEl.textContent = '⚠ Collection parsed but contained no requests';
+          return;
+        }
+        outputField.value += compiledOutput;
         renderEnvOutputs(compiledOutput, postman.variable);
         const { rootName, tree } = buildFolderStructure(postman);
         renderFolderTree(tree, rootName);
         window._lastTree = tree;
         window._lastRootName = rootName;
+        if (statusEl) statusEl.textContent = `✓ Compiled successfully — ${(compiledOutput.match(/^meta \{/gm) || []).length} request(s) emitted.`;
       } catch(e) {
-        outputField.value = `// Compilation AST Parse Error: ${e.message}\n// Validate structural format correctness.`;
+        outputField.value += `// Runtime Compilation Error: ${e.message}\n// The JSON parsed correctly but failed during .bru conversion.\n// Please report this at github.com/ominouusprophecies/bruno-protocol/issues`;
+        if (statusEl) statusEl.textContent = '⚠ Compilation error — see output for details';
       }
     });
 
