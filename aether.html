@@ -386,7 +386,8 @@
   <div class="nav-links">
     <a href="index.html" class="nav-back">&larr; Bruno Protocol</a>
     <a href="benchmark.html" class="nav-back">Benchmark</a>
-    <span class="nav-badge">GENXR_V1.5 / STRICT_MODE</span>
+    <a href="multi-target.html" class="nav-back">Multi-Target</a>
+    <span class="nav-badge">GENXR_V2.3 / STRICT_MODE</span>
   </div>
 </nav>
 
@@ -396,7 +397,7 @@
     <h1>Aether Protocol</h1>
     <p>
       Compile <code>.bru</code> source into verified <code>.aet</code> Aether manifests, or decompile
-      <code>.aet</code> back to <code>.bru</code>. The GENXR_V1.5 engine enforces energy constraints,
+      <code>.aet</code> back to <code>.bru</code>. The GENXR_V2.3 engine enforces energy constraints,
       security tiers, and hardware boundary rules at compile time &mdash; before a single line of
       cross-domain code can execute.
     </p>
@@ -493,7 +494,7 @@
   <section class="biolume-panel">
     <div class="panel-title">⚡ Performance Benchmarks</div>
     <p style="font-size:11px;color:var(--silver);margin-bottom:22px;line-height:1.8;">
-      GENXR_V1.5 processes verified security, energy, and hardware constraint checks
+      GENXR_V2.3 processes verified security, energy, and hardware constraint checks
       in sub-millisecond time per function — without an SMT solver, without a runtime,
       and without probabilistic output.
     </p>
@@ -571,7 +572,7 @@
         </thead>
         <tbody>
           <tr style="border-bottom:1px solid rgba(57,255,20,0.08);background:rgba(57,255,20,0.03);">
-            <td style="padding:8px 12px;color:var(--biolume-green);font-weight:bold;">Aether GENXR_V1.5</td>
+            <td style="padding:8px 12px;color:var(--biolume-green);font-weight:bold;">Aether GENXR_V2.3</td>
             <td style="padding:8px 12px;color:var(--silver);">Security + energy + hardware contracts</td>
             <td style="padding:8px 12px;text-align:right;color:var(--biolume-green);font-weight:bold;">~0.3ms / fn</td>
             <td style="padding:8px 12px;text-align:center;color:var(--biolume-green);">✓ Hard</td>
@@ -632,7 +633,7 @@
         <p>Proprietary compiled output. Each function emits a <code>fn_spec</code> header block followed by a verified operational body. Security and energy contracts are proven at compile time.</p>
       </div>
       <div class="spec-card">
-        <h3>GENXR_V1.5</h3>
+        <h3>GENXR_V2.3</h3>
         <p>Verified baseline June 15, 2026. All 9 fixtures pass. Enforces <code>InvalidSecurityEnergyCombination</code>, <code>SecurityTaintLeak</code>, Krapivin lint, and strict external function contracts.</p>
       </div>
       <div class="spec-card">
@@ -687,7 +688,7 @@ fn initialize_tables() -> () {
     const errBody  = document.getElementById('compile-error-body');
     errPanel.style.display = 'none'; outputEl.value = '';
     if (!src) { statusEl.textContent = 'No input detected.'; return; }
-    statusEl.textContent = '⟳ Running GENXR_V1.5 / STRICT_MODE...';
+    statusEl.textContent = '⟳ Running GENXR_V2.3 / STRICT_MODE...';
     const moduleMatch = src.match(/^module\s+(\w+)/m);
     const moduleName = moduleMatch ? moduleMatch[1] : 'Unknown';
     const attrMatch = src.match(/\[([^\]]+)\]/);
@@ -735,7 +736,7 @@ fn initialize_tables() -> () {
       }
     }
     let aet = `// ⚡ AETHER PROTOCOL COMPILED TARGET MANIFEST\n`;
-    aet    += `// GENERATOR ENGINE: GENXR_V1.5 / STRICT_MODE\n`;
+    aet    += `// GENERATOR ENGINE: GENXR_V2.3 / STRICT_MODE\n`;
     aet    += `// SOURCE MODULE: ${moduleName}\n\n`;
     const fnBlockMatches = [...src.matchAll(/fn\s+(\w+)\s*\(([^)]*)\)\s*->\s*([\w()]+)\s*\{([^}]*)\}/gs)];
     for (const fn of fnBlockMatches) {
@@ -756,7 +757,7 @@ fn initialize_tables() -> () {
   });
 
   const DEMO_AET = `// ⚡ AETHER PROTOCOL COMPILED TARGET MANIFEST
-// GENERATOR ENGINE: GENXR_V1.5 / STRICT_MODE
+// GENERATOR ENGINE: GENXR_V2.3 / STRICT_MODE
 // SOURCE MODULE: DataLayer
 
 fn_spec {
